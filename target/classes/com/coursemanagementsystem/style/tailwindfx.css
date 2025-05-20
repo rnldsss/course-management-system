@@ -1,0 +1,30 @@
+.main-bg {
+    -fx-background-color: #f9fafb;
+}
+.title {
+    -fx-font-size: 2em;
+    -fx-font-weight: bold;
+    -fx-text-fill: #1f2937;
+}
+.primary-btn {
+    -fx-background-color: #3b82f6;
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+    -fx-padding: 10 24 10 24;
+    -fx-background-radius: 8;
+    -fx-border-radius: 8;
+}
+.primary-btn:hover {
+    -fx-background-color: #2563eb;
+}
+.table-view {
+    -fx-background-color: white;
+    -fx-border-color: #d1d5db;
+    -fx-border-radius: 8;
+    -fx-background-radius: 8;
+}
+.table-column-header {
+    -fx-background-color: #f3f4f6;
+    -fx-text-fill: #374151;
+    -fx-font-weight: bold;
+}
