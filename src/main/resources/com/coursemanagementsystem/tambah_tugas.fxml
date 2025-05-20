@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.geometry.*?>
+
+<VBox xmlns="http://javafx.com/javafx/11"
+      xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="com.coursemanagementsystem.controller.TambahTugasController"
+      spacing="15" styleClass="form-container" padding="20">
+      
+    <Label text="Data Tugas" styleClass="form-title"/>
+    
+    <GridPane hgap="10" vgap="15">
+        <columnConstraints>
+            <ColumnConstraints hgrow="NEVER" minWidth="100" />
+            <ColumnConstraints hgrow="ALWAYS" minWidth="200" />
+        </columnConstraints>
+        
+        <!-- Nama Tugas -->
+        <Label text="Nama Tugas:" GridPane.rowIndex="0" GridPane.columnIndex="0" />
+        <TextField fx:id="txtNama" GridPane.rowIndex="0" GridPane.columnIndex="1" />
+        
+        <!-- Deadline -->
+        <Label text="Deadline:" GridPane.rowIndex="1" GridPane.columnIndex="0" />
+        <DatePicker fx:id="datePicker" GridPane.rowIndex="1" GridPane.columnIndex="1" />
+        
+        <!-- Prioritas -->
+        <Label text="Prioritas:" GridPane.rowIndex="2" GridPane.columnIndex="0" />
+        <ComboBox fx:id="cbPrioritas" GridPane.rowIndex="2" GridPane.columnIndex="1" />
+        
+        <!-- Mata Kuliah -->
+        <Label text="Mata Kuliah:" GridPane.rowIndex="3" GridPane.columnIndex="0" />
+        <TextField fx:id="txtMataKuliah" GridPane.rowIndex="3" GridPane.columnIndex="1" />
+        
+        <!-- Tipe Tugas -->
+        <Label text="Tipe Tugas:" GridPane.rowIndex="4" GridPane.columnIndex="0" />
+        <ComboBox fx:id="cbTipe" GridPane.rowIndex="4" GridPane.columnIndex="1" />
+    </GridPane>
+    
+    <!-- Panel untuk anggota kelompok, awalnya tersembunyi -->
+    <VBox fx:id="vboxAnggota" spacing="10" style="-fx-padding: 10 0 0 0;">
+        <Label text="Anggota Kelompok" styleClass="section-title"/>
+        
+        <HBox spacing="10">
+            <TextField fx:id="txtAnggotaKelompok" promptText="Nama anggota" HBox.hgrow="ALWAYS"/>
+            <Button fx:id="btnTambahAnggota" text="+" styleClass="action-btn"/>
+        </HBox>
+        
+        <ListView fx:id="lvAnggota" prefHeight="100"/>
+    </VBox>
+    
+    <!-- Tombol Simpan dan Batal -->
+    <HBox spacing="10" alignment="CENTER_RIGHT" style="-fx-padding: 10 0 0 0;">
+        <Button fx:id="btnBatal" text="Batal" styleClass="cancel-btn"/>
+        <Button fx:id="btnSimpan" text="Simpan" styleClass="primary-btn"/>
+    </HBox>
+</VBox>

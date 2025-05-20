@@ -1,19 +1,28 @@
 <?xml version="1.0" encoding="UTF-8"?>
+
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.control.*?>
-<VBox xmlns="http://javafx.com/javafx/8"
-      xmlns:fx="http://javafx.com/fxml"
-      fx:controller="controller.DashboardController"
+<?import javafx.geometry.*?>
+
+<VBox xmlns="http://javafx.com/javafx/11"
+      xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="com.coursemanagementsystem.controller.DashboardController"
       spacing="20" alignment="TOP_CENTER" styleClass="main-bg" padding="24">
+      
     <Label text="Manajemen Tugas Mahasiswa" styleClass="title"/>
-    <Button text="Tambah Tugas" fx:id="btnTambah" styleClass="primary-btn"/>
+    
+    <HBox spacing="10" alignment="CENTER_RIGHT">
+        <Button text="Tambah Tugas" fx:id="btnTambah" styleClass="primary-btn"/>
+    </HBox>
+    
     <TableView fx:id="tableTugas" prefHeight="400" VBox.vgrow="ALWAYS">
         <columns>
-            <TableColumn text="Nama" fx:id="colNama"/>
-            <TableColumn text="Deadline" fx:id="colDeadline"/>
-            <TableColumn text="Prioritas" fx:id="colPrioritas"/>
-            <TableColumn text="Mata Kuliah" fx:id="colMataKuliah"/>
-            <TableColumn text="Aksi" fx:id="colAksi"/>
+            <TableColumn text="Nama" fx:id="colNama" prefWidth="200"/>
+            <TableColumn text="Deadline" fx:id="colDeadline" prefWidth="100"/>
+            <TableColumn text="Prioritas" fx:id="colPrioritas" prefWidth="100"/>
+            <TableColumn text="Mata Kuliah" fx:id="colMataKuliah" prefWidth="150"/>
+            <TableColumn text="Tipe" fx:id="colTipe" prefWidth="100"/>
+            <TableColumn text="Aksi" fx:id="colAksi" prefWidth="150"/>
         </columns>
     </TableView>
 </VBox>

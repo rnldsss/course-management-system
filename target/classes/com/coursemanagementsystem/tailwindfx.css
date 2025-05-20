@@ -1,11 +1,25 @@
 .main-bg {
     -fx-background-color: #f9fafb;
 }
+
 .title {
     -fx-font-size: 2em;
     -fx-font-weight: bold;
     -fx-text-fill: #1f2937;
 }
+
+.form-title {
+    -fx-font-size: 1.5em;
+    -fx-font-weight: bold;
+    -fx-text-fill: #1f2937;
+}
+
+.section-title {
+    -fx-font-size: 1.2em;
+    -fx-font-weight: bold;
+    -fx-text-fill: #4b5563;
+}
+
 .primary-btn {
     -fx-background-color: #3b82f6;
     -fx-text-fill: white;
@@ -14,17 +28,80 @@
     -fx-background-radius: 8;
     -fx-border-radius: 8;
 }
+
 .primary-btn:hover {
     -fx-background-color: #2563eb;
 }
+
+.cancel-btn {
+    -fx-background-color: #e5e7eb;
+    -fx-text-fill: #4b5563;
+    -fx-padding: 10 24 10 24;
+    -fx-background-radius: 8;
+    -fx-border-radius: 8;
+}
+
+.cancel-btn:hover {
+    -fx-background-color: #d1d5db;
+}
+
+.action-btn {
+    -fx-background-color: #10b981;
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+    -fx-min-width: 40px;
+    -fx-min-height: 40px;
+    -fx-background-radius: 8;
+    -fx-border-radius: 8;
+}
+
+.action-btn:hover {
+    -fx-background-color: #059669;
+}
+
+.edit-btn {
+    -fx-background-color: #f59e0b;
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+    -fx-padding: 5 10 5 10;
+    -fx-background-radius: 4;
+    -fx-border-radius: 4;
+}
+
+.edit-btn:hover {
+    -fx-background-color: #d97706;
+}
+
+.delete-btn {
+    -fx-background-color: #ef4444;
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+    -fx-padding: 5 10 5 10;
+    -fx-background-radius: 4;
+    -fx-border-radius: 4;
+}
+
+.delete-btn:hover {
+    -fx-background-color: #dc2626;
+}
+
 .table-view {
     -fx-background-color: white;
     -fx-border-color: #d1d5db;
     -fx-border-radius: 8;
     -fx-background-radius: 8;
 }
+
 .table-column-header {
     -fx-background-color: #f3f4f6;
     -fx-text-fill: #374151;
     -fx-font-weight: bold;
+}
+
+.form-container {
+    -fx-background-color: white;
+    -fx-background-radius: 10;
+    -fx-border-radius: 10;
+    -fx-border-color: #e5e7eb;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.1), 10, 0, 0, 3);
 }

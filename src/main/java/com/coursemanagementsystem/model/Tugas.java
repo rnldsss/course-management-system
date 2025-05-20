@@ -1,16 +1,18 @@
 package com.coursemanagementsystem.model;
 
-public abstract class Tugas {
+public class Tugas {
     protected String nama;
     protected String deadline;
     protected String prioritas;
     protected String mataKuliah;
-
+    protected String tipe; // "Individu" atau "Kelompok"
+    
     public Tugas(String nama, String deadline, String prioritas, String mataKuliah) {
         this.nama = nama;
         this.deadline = deadline;
         this.prioritas = prioritas;
         this.mataKuliah = mataKuliah;
+        this.tipe = "Individu"; // default
     }
 
     public String getNama() { return nama; }
@@ -21,4 +23,6 @@ public abstract class Tugas {
     public void setPrioritas(String prioritas) { this.prioritas = prioritas; }
     public String getMataKuliah() { return mataKuliah; }
     public void setMataKuliah(String mataKuliah) { this.mataKuliah = mataKuliah; }
+    public String getTipe() { return tipe; }
+    public void setTipe(String tipe) { this.tipe = tipe; }
 }
