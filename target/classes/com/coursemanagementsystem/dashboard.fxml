@@ -7,7 +7,7 @@
 <VBox xmlns="http://javafx.com/javafx/11"
       xmlns:fx="http://javafx.com/fxml/1"
       fx:controller="com.coursemanagementsystem.controller.DashboardController"
-      spacing="20" alignment="TOP_CENTER" styleClass="main-bg" padding="24">
+      spacing="20" alignment="TOP_CENTER" styleClass="main-bg" padding="24.0">
       
     <Label text="Manajemen Tugas Mahasiswa" styleClass="title"/>
     
