@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.*?>
+<VBox xmlns="http://javafx.com/javafx/8"
+      xmlns:fx="http://javafx.com/fxml"
+      fx:controller="controller.DashboardController"
+      spacing="20" alignment="TOP_CENTER" styleClass="main-bg" padding="24">
+    <Label text="Manajemen Tugas Mahasiswa" styleClass="title"/>
+    <Button text="Tambah Tugas" fx:id="btnTambah" styleClass="primary-btn"/>
+    <TableView fx:id="tableTugas" prefHeight="400" VBox.vgrow="ALWAYS">
+        <columns>
+            <TableColumn text="Nama" fx:id="colNama"/>
+            <TableColumn text="Deadline" fx:id="colDeadline"/>
+            <TableColumn text="Prioritas" fx:id="colPrioritas"/>
+            <TableColumn text="Mata Kuliah" fx:id="colMataKuliah"/>
+            <TableColumn text="Aksi" fx:id="colAksi"/>
+        </columns>
+    </TableView>
+</VBox>
