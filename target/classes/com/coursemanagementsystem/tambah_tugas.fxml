@@ -7,7 +7,11 @@
 <VBox xmlns="http://javafx.com/javafx/11"
       xmlns:fx="http://javafx.com/fxml/1"
       fx:controller="com.coursemanagementsystem.controller.TambahTugasController"
-      spacing="15" styleClass="form-container" padding="20">
+      spacing="15" styleClass="form-container">
+      
+    <padding>
+        <Insets top="20" right="20" bottom="20" left="20" />
+    </padding>
       
     <Label text="Data Tugas" styleClass="form-title"/>
     
@@ -39,7 +43,11 @@
     </GridPane>
     
     <!-- Panel untuk anggota kelompok, awalnya tersembunyi -->
-    <VBox fx:id="vboxAnggota" spacing="10" style="-fx-padding: 10 0 0 0;">
+    <VBox fx:id="vboxAnggota" spacing="10">
+        <padding>
+            <Insets top="10" right="0" bottom="0" left="0" />
+        </padding>
+        
         <Label text="Anggota Kelompok" styleClass="section-title"/>
         
         <HBox spacing="10">
@@ -51,7 +59,11 @@
     </VBox>
     
     <!-- Tombol Simpan dan Batal -->
-    <HBox spacing="10" alignment="CENTER_RIGHT" style="-fx-padding: 10 0 0 0;">
+    <HBox spacing="10" alignment="CENTER_RIGHT">
+        <padding>
+            <Insets top="10" right="0" bottom="0" left="0" />
+        </padding>
+        
         <Button fx:id="btnBatal" text="Batal" styleClass="cancel-btn"/>
         <Button fx:id="btnSimpan" text="Simpan" styleClass="primary-btn"/>
     </HBox>

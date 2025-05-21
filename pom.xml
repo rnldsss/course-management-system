@@ -41,7 +41,7 @@
                         <!-- Usage: mvn clean javafx:run -->
                         <id>default-cli</id>
                         <configuration>
-                            <mainClass>com.coursemanagementsystem.App</mainClass>
+                            <mainClass>com.coursemanagementsystem.MainApp</mainClass>
                         </configuration>
                     </execution>
                 </executions>
