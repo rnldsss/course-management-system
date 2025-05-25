@@ -16,12 +16,12 @@ public class DatabaseConnection {
             try {
                 Class.forName("com.mysql.cj.jdbc.Driver"); // Load driver MySQL
                 connection = DriverManager.getConnection(URL, USER, PASSWORD);
-                System.out.println("✅ Koneksi ke database berhasil.");
+                System.out.println("Koneksi ke database berhasil.");
             } catch (ClassNotFoundException e) {
-                System.out.println("❌ JDBC Driver tidak ditemukan.");
+                System.out.println("JDBC Driver tidak ditemukan.");
                 e.printStackTrace();
             } catch (SQLException e) {
-                System.out.println("❌ Gagal menghubungkan ke database.");
+                System.out.println("Gagal menghubungkan ke database.");
                 e.printStackTrace();
             }
         }
