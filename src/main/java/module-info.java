@@ -1,7 +1,7 @@
 module com.coursemanagementsystem {
     requires javafx.controls;
     requires javafx.fxml;
-    requires java.sql;
+    requires transitive java.sql;
     requires transitive javafx.graphics;
 
     opens com.coursemanagementsystem to javafx.fxml;
