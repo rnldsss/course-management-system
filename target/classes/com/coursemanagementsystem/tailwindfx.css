@@ -136,8 +136,18 @@
 
 /* STATUS BAR */
 .status-bar {
+<<<<<<< HEAD
     -fx-background-color: #f1f5f9;
     -fx-padding: 10 16;
     -fx-font-size: 0.97em;
     -fx-border-radius: 0 0 20 20;
 }
+=======
+    -fx-background-color: #f8fafc;
+    -fx-padding: 8 16 8 16;
+    -fx-border-color: #e2e8f0;
+    -fx-border-width: 1 0 0 0;
+}
+
+/* Checkboxes */
+>>>>>>> 2244de710ef40443be1aa42ef5367d7b7aada033
