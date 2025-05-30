@@ -15,127 +15,122 @@ import javafx.event.ActionEvent;
 import javafx.scene.layout.HBox;
 
 import java.io.IOException;
+import java.sql.*;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.Optional;
 
 import com.coursemanagementsystem.model.*;
+import com.coursemanagementsystem.database.DatabaseConnection;
 
 public class DashboardController {
-    @FXML
-    private TableView<Tugas> tableTugas;
-    @FXML
-    private TableColumn<Tugas, String> colNama, colDeadline, colPrioritas, colMataKuliah, colTipe;
-    @FXML
-    private TableColumn<Tugas, Void> colAksi;
-    @FXML
-    private Button btnTambah;
-
-    @FXML
-    private ComboBox<String> comboFilter; // Tambahan ComboBox filter
-
-    @FXML
-    private TextField searchField;
+    @FXML private TableView<Tugas> tableTugas;
+    @FXML private TableColumn<Tugas, String> colNama, colDeadline, colPrioritas, colMataKuliah, colTipe;
+    @FXML private TableColumn<Tugas, Void> colAksi;
+    @FXML private Button btnTambah;
+    @FXML private ComboBox<String> comboFilter;
+    @FXML private TextField searchField;
 
     private ObservableList<Tugas> tugasList = FXCollections.observableArrayList();
     private FilteredList<Tugas> filteredTugas;
 
+    private Mahasiswa mahasiswa;
+
+    public void setMahasiswa(Mahasiswa mhs) {
+        this.mahasiswa = mhs;
+        loadTugasFromDatabase();
+        cekNotifikasiDeadline();
+    }
+
     @FXML
     public void initialize() {
-        // Inisialisasi comboFilter dengan pilihan filter
         comboFilter.getItems().addAll("Semua", "Mendesak", "Sedang dikerjakan", "Selesai");
-        comboFilter.getSelectionModel().selectFirst(); // Default pilih "Semua"
+        comboFilter.getSelectionModel().selectFirst();
 
-        // Konfigurasi kolom tabel
-        colNama.setCellValueFactory(new PropertyValueFactory<>("nama"));
+        colNama.setCellValueFactory(new PropertyValueFactory<>("judul"));
         colDeadline.setCellValueFactory(new PropertyValueFactory<>("deadline"));
         colPrioritas.setCellValueFactory(new PropertyValueFactory<>("prioritas"));
         colMataKuliah.setCellValueFactory(new PropertyValueFactory<>("mataKuliah"));
         colTipe.setCellValueFactory(new PropertyValueFactory<>("tipe"));
 
-        // Setup kolom Aksi
         setupAksiColumn();
 
-        // Inisialisasi filtered list untuk search dan filter
         filteredTugas = new FilteredList<>(tugasList, p -> true);
         tableTugas.setItems(filteredTugas);
 
-        // Listener searchField untuk filter realtime
         searchField.textProperty().addListener((obs, oldVal, newVal) -> filterTugas());
-
-        // Listener comboFilter untuk filter berdasarkan status
         comboFilter.valueProperty().addListener((obs, oldVal, newVal) -> filterTugas());
 
-        // Tambahkan data contoh
-        tambahDataContoh();
-
-        // Cek notifikasi deadline
-        cekNotifikasiDeadline();
-
-        // Perbaikan: inisialisasi event handler tombol tambah
         btnTambah.setOnAction(e -> tambahTugas());
     }
-    
-    // Method untuk filter data tugas berdasarkan searchField dan comboFilter
+
+    private void loadTugasFromDatabase() {
+        tugasList.clear();
+        if (mahasiswa == null) return;
+
+        try (Connection conn = DatabaseConnection.getConnection()) {
+            String sql =
+                "SELECT t.id, t.judul, t.deadline, t.prioritas, t.mata_kuliah, t.tipe, t.deskripsi " +
+                "FROM tugas t " +
+                "JOIN tugas_mahasiswa tm ON t.id = tm.id_tugas " +
+                "WHERE tm.id_mahasiswa = ?";
+            PreparedStatement st = conn.prepareStatement(sql);
+            st.setInt(1, mahasiswa.getId());
+            ResultSet rs = st.executeQuery();
+            while (rs.next()) {
+                Tugas tugas = new Tugas(
+                    rs.getInt("id"),
+                    rs.getString("judul"),
+                    rs.getString("deskripsi"),
+                    rs.getString("deadline") != null ? rs.getString("deadline").substring(0, 10) : "",
+                    rs.getString("prioritas"),
+                    rs.getString("mata_kuliah"),
+                    rs.getString("tipe")
+                );
+                tugasList.add(tugas);
+            }
+        } catch (SQLException e) {
+            showAlert("Database Error", "Gagal mengambil data tugas: " + e.getMessage(), Alert.AlertType.ERROR);
+        }
+    }
+
     private void filterTugas() {
         String searchText = searchField.getText() == null ? "" : searchField.getText().toLowerCase().trim();
         String filterStatus = comboFilter.getValue();
 
         filteredTugas.setPredicate(tugas -> {
-            // Filter berdasarkan search text (nama, mata kuliah, prioritas)
             boolean matchesSearch = searchText.isEmpty() ||
-                    tugas.getNama().toLowerCase().contains(searchText) ||
+                    tugas.getJudul().toLowerCase().contains(searchText) ||
                     tugas.getMataKuliah().toLowerCase().contains(searchText) ||
                     tugas.getPrioritas().toLowerCase().contains(searchText);
 
-            if (!matchesSearch)
-                return false;
-
-            // Filter berdasarkan status tugas
-            if (filterStatus == null || filterStatus.equals("Semua")) {
-                return true; // tampilkan semua
-            }
+            if (!matchesSearch) return false;
+            if (filterStatus == null || filterStatus.equals("Semua")) return true;
 
             switch (filterStatus) {
                 case "Mendesak":
                     return isMendesak(tugas);
                 case "Sedang dikerjakan":
-                    return isSedangDikerjakan(tugas);
+                    return false;
                 case "Selesai":
-                    return isSelesai(tugas);
+                    return false;
                 default:
                     return true;
             }
         });
     }
 
-    // Contoh metode logika status, sesuaikan dengan atribut model tugas kamu
     private boolean isMendesak(Tugas tugas) {
         try {
             LocalDate today = LocalDate.now();
             LocalDate deadline = LocalDate.parse(tugas.getDeadline());
             long daysDiff = ChronoUnit.DAYS.between(today, deadline);
-            // Mendesak: deadline 3 hari ke depan dan belum selesai
-            return daysDiff >= 0 && daysDiff <= 3 && !isSelesai(tugas);
+            return daysDiff >= 0 && daysDiff <= 3;
         } catch (Exception e) {
             return false;
         }
     }
-
-    private boolean isSedangDikerjakan(Tugas tugas) {
-        // Contoh: prioritas bukan "Selesai" dan bukan mendesak
-        // Sesuaikan dengan atribut status yang kamu miliki di model Tugas
-        return !isSelesai(tugas) && !isMendesak(tugas);
-    }
-
-    private boolean isSelesai(Tugas tugas) {
-        // Jika kamu punya atribut status selesai, gunakan di sini
-        // Contoh sementara:
-        return false; // Ganti dengan logika sesungguhnya
-    }
-
-    // ... kode lain tetap sama seperti yang kamu berikan sebelumnya ...
 
     private void setupAksiColumn() {
         Callback<TableColumn<Tugas, Void>, TableCell<Tugas, Void>> cellFactory = new Callback<>() {
@@ -147,9 +142,6 @@ public class DashboardController {
                     private final HBox pane = new HBox(5, btnEdit, btnHapus);
 
                     {
-                        btnEdit.getStyleClass().add("edit-btn");
-                        btnHapus.getStyleClass().add("delete-btn");
-
                         btnEdit.setOnAction((ActionEvent event) -> {
                             Tugas tugas = getTableView().getItems().get(getIndex());
                             editTugas(tugas);
@@ -164,27 +156,77 @@ public class DashboardController {
                     @Override
                     protected void updateItem(Void item, boolean empty) {
                         super.updateItem(item, empty);
-                        if (empty) {
-                            setGraphic(null);
-                        } else {
-                            setGraphic(pane);
-                        }
+                        setGraphic(empty ? null : pane);
                     }
                 };
             }
         };
-
         colAksi.setCellFactory(cellFactory);
     }
 
-    private void tambahDataContoh() {
-        tugasList.add(new TugasIndividu("Membuat ERD", "2025-05-27", "Tinggi", "Basis Data"));
-        tugasList.add(new TugasIndividu("Laporan Praktikum", "2025-05-25", "Menengah", "Struktur Data"));
+    private void tambahTugas() {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/coursemanagementsystem/tambah_tugas.fxml"));
+            Parent root = loader.load();
 
-        TugasKelompok tugasKelompok = new TugasKelompok("Proyek Akhir", "2025-06-15", "Tinggi", "Pemrograman OOP");
-        tugasKelompok.tambahAnggota(new Mahasiswa("Budi"));
-        tugasKelompok.tambahAnggota(new Mahasiswa("Ani"));
-        tugasList.add(tugasKelompok);
+            TambahTugasController controller = loader.getController();
+            controller.setMahasiswa(mahasiswa);
+            controller.setOnTugasSaved(() -> {
+                loadTugasFromDatabase();
+                tableTugas.refresh();
+            });
+
+            Stage stage = new Stage();
+            stage.initModality(Modality.APPLICATION_MODAL);
+            stage.setTitle("Tambah Tugas Baru");
+            stage.setScene(new Scene(root));
+            stage.showAndWait();
+        } catch (IOException e) {
+            showAlert("Error", "Tidak dapat membuka form tambah tugas: " + e.getMessage(), Alert.AlertType.ERROR);
+        }
+    }
+
+    private void editTugas(Tugas tugas) {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/coursemanagementsystem/tambah_tugas.fxml"));
+            Parent root = loader.load();
+
+            TambahTugasController controller = loader.getController();
+            controller.setMahasiswa(mahasiswa);
+            controller.setTugas(tugas);
+            controller.setEditMode(true);
+            controller.setOnTugasSaved(() -> {
+                loadTugasFromDatabase();
+                tableTugas.refresh();
+            });
+
+            Stage stage = new Stage();
+            stage.initModality(Modality.APPLICATION_MODAL);
+            stage.setTitle("Edit Tugas");
+            stage.setScene(new Scene(root));
+            stage.showAndWait();
+        } catch (IOException e) {
+            showAlert("Error", "Tidak dapat membuka form edit tugas: " + e.getMessage(), Alert.AlertType.ERROR);
+        }
+    }
+
+    private void hapusTugas(Tugas tugas) {
+        Alert confirmDialog = new Alert(Alert.AlertType.CONFIRMATION);
+        confirmDialog.setTitle("Konfirmasi Hapus");
+        confirmDialog.setHeaderText("Hapus Tugas");
+        confirmDialog.setContentText("Apakah Anda yakin ingin menghapus tugas \"" + tugas.getJudul() + "\"?");
+
+        Optional<ButtonType> result = confirmDialog.showAndWait();
+        if (result.isPresent() && result.get() == ButtonType.OK) {
+            try (Connection conn = DatabaseConnection.getConnection()) {
+                PreparedStatement stmt = conn.prepareStatement("DELETE FROM tugas WHERE id=?");
+                stmt.setInt(1, tugas.getId());
+                stmt.executeUpdate();
+                loadTugasFromDatabase();
+            } catch (SQLException e) {
+                showAlert("Error", "Gagal menghapus tugas dari database: " + e.getMessage(), Alert.AlertType.ERROR);
+            }
+        }
     }
 
     private void cekNotifikasiDeadline() {
@@ -197,103 +239,19 @@ public class DashboardController {
                 long daysDiff = ChronoUnit.DAYS.between(today, deadline);
 
                 if (daysDiff <= 3 && daysDiff >= 0) {
-                    Alert alert = new Alert(Alert.AlertType.WARNING);
-                    alert.setTitle("Pengingat Tugas");
-                    alert.setHeaderText("Deadline Mendekati");
-                    alert.setContentText(
-                            "Tugas \"" + tugas.getNama() + "\" akan berakhir dalam " + daysDiff + " hari lagi!");
-                    alert.showAndWait();
+                    showAlert("Pengingat Tugas", "Tugas \"" + tugas.getJudul() + "\" akan berakhir dalam " + daysDiff + " hari lagi!", Alert.AlertType.WARNING);
                 } else if (daysDiff < 0) {
-                    Alert alert = new Alert(Alert.AlertType.ERROR);
-                    alert.setTitle("Tugas Terlambat");
-                    alert.setHeaderText("Deadline Sudah Lewat");
-                    alert.setContentText(
-                            "Tugas \"" + tugas.getNama() + "\" sudah melewati deadline sejak " + (-daysDiff)
-                                    + " hari yang lalu!");
-                    alert.showAndWait();
+                    showAlert("Tugas Terlambat", "Tugas \"" + tugas.getJudul() + "\" sudah melewati deadline sejak " + (-daysDiff) + " hari yang lalu!", Alert.AlertType.ERROR);
                 }
-            } catch (Exception e) {
-                System.err.println("Format tanggal tidak valid: " + tugas.getDeadline());
-            }
+            } catch (Exception ignored) { }
         }
     }
 
-    private void tambahTugas() {
-        try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/coursemanagementsystem/tambah_tugas.fxml"));
-            Parent root = loader.load();
-
-            TambahTugasController controller = loader.getController();
-            controller.setTugasList(tugasList);
-
-            Stage stage = new Stage();
-            stage.initModality(Modality.APPLICATION_MODAL);
-            stage.setTitle("Tambah Tugas Baru");
-            stage.setWidth(400);
-            stage.setHeight(600);
-            stage.setMinWidth(350);
-            stage.setMinHeight(500);
-            Scene scene = new Scene(root);
-            scene.getStylesheets()
-                    .add(getClass().getResource("/com/coursemanagementsystem/tailwindfx.css").toExternalForm());
-            stage.setScene(scene);
-            stage.showAndWait();
-
-        } catch (IOException e) {
-            e.printStackTrace();
-            Alert alert = new Alert(Alert.AlertType.ERROR);
-            alert.setTitle("Error");
-            alert.setHeaderText("Gagal Membuka Form");
-            alert.setContentText("Tidak dapat membuka form tambah tugas: " + e.getMessage());
-            alert.showAndWait();
-        }
-    }
-
-    private void editTugas(Tugas tugas) {
-        try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/coursemanagementsystem/tambah_tugas.fxml"));
-            Parent root = loader.load();
-
-            TambahTugasController controller = loader.getController();
-            controller.setTugasList(tugasList);
-            controller.setEditMode(true);
-            controller.setTugas(tugas);
-
-            Stage stage = new Stage();
-            stage.initModality(Modality.APPLICATION_MODAL);
-            stage.setTitle("Edit Tugas");
-            stage.setWidth(400);
-            stage.setHeight(600);
-            stage.setMinWidth(350);
-            stage.setMinHeight(500);
-            Scene scene = new Scene(root);
-            scene.getStylesheets()
-                    .add(getClass().getResource("/com/coursemanagementsystem/tailwindfx.css").toExternalForm());
-            stage.setScene(scene);
-            stage.showAndWait();
-
-            // Refresh tabel supaya data terbaru tampil
-            tableTugas.refresh();
-
-        } catch (IOException e) {
-            e.printStackTrace();
-            Alert alert = new Alert(Alert.AlertType.ERROR);
-            alert.setTitle("Error");
-            alert.setHeaderText("Gagal Membuka Form");
-            alert.setContentText("Tidak dapat membuka form edit tugas: " + e.getMessage());
-            alert.showAndWait();
-        }
-    }
-
-    private void hapusTugas(Tugas tugas) {
-        Alert confirmDialog = new Alert(Alert.AlertType.CONFIRMATION);
-        confirmDialog.setTitle("Konfirmasi Hapus");
-        confirmDialog.setHeaderText("Hapus Tugas");
-        confirmDialog.setContentText("Apakah Anda yakin ingin menghapus tugas \"" + tugas.getNama() + "\"?");
-
-        Optional<ButtonType> result = confirmDialog.showAndWait();
-        if (result.isPresent() && result.get() == ButtonType.OK) {
-            tugasList.remove(tugas);
-        }
+    private void showAlert(String title, String content, Alert.AlertType type) {
+        Alert alert = new Alert(type);
+        alert.setTitle(title);
+        alert.setHeaderText(null);
+        alert.setContentText(content);
+        alert.showAndWait();
     }
 }

@@ -1,182 +1,126 @@
 package com.coursemanagementsystem.controller;
 
+import com.coursemanagementsystem.database.DatabaseConnection;
+import com.coursemanagementsystem.model.Mahasiswa;
+import com.coursemanagementsystem.model.Tugas;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
-import javafx.collections.ObservableList;
 import javafx.stage.Stage;
-import javafx.scene.layout.VBox;
 
+import java.sql.*;
 import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-
-import com.coursemanagementsystem.model.*;
 
 public class TambahTugasController {
-    @FXML private TextField txtNama;
+    @FXML private TextField txtJudul;
+    @FXML private TextArea txtDeskripsi;
     @FXML private DatePicker datePicker;
     @FXML private ComboBox<String> cbPrioritas;
     @FXML private TextField txtMataKuliah;
     @FXML private ComboBox<String> cbTipe;
-    @FXML private TextField txtAnggotaKelompok;
-    @FXML private ListView<String> lvAnggota;
-    @FXML private Button btnTambahAnggota;
     @FXML private Button btnSimpan;
     @FXML private Button btnBatal;
-    @FXML private VBox vboxAnggota;
-    
-    private ObservableList<Tugas> tugasList;
-    private ArrayList<String> daftarAnggota = new ArrayList<>();
-    private boolean isEditMode = false;
-    private Tugas tugasToEdit;
-    
+
+    private Mahasiswa mahasiswa;
+    private Tugas tugas;
+    private boolean editMode = false;
+    private Runnable onTugasSaved;
+
+    public void setMahasiswa(Mahasiswa mahasiswa) {
+        this.mahasiswa = mahasiswa;
+    }
+
+    public void setTugas(Tugas tugas) {
+        this.tugas = tugas;
+        if (tugas != null) {
+            txtJudul.setText(tugas.getJudul());
+            txtDeskripsi.setText(tugas.getDeskripsi());
+            datePicker.setValue(LocalDate.parse(tugas.getDeadline()));
+            cbPrioritas.setValue(tugas.getPrioritas());
+            txtMataKuliah.setText(tugas.getMataKuliah());
+            cbTipe.setValue(tugas.getTipe());
+        }
+    }
+
+    public void setEditMode(boolean editMode) {
+        this.editMode = editMode;
+        btnSimpan.setText(editMode ? "Update" : "Simpan");
+    }
+
+    public void setOnTugasSaved(Runnable callback) {
+        this.onTugasSaved = callback;
+    }
+
     @FXML
     public void initialize() {
-        // Setup ComboBox prioritas
         cbPrioritas.getItems().addAll("Rendah", "Menengah", "Tinggi");
-        cbPrioritas.setValue("Menengah");
-        
-        // Setup ComboBox tipe tugas
         cbTipe.getItems().addAll("Individu", "Kelompok");
+        cbPrioritas.setValue("Menengah");
         cbTipe.setValue("Individu");
-        
-        // Tentukan visibilitas panel anggota kelompok
-        cbTipe.setOnAction(e -> {
-            boolean isKelompok = "Kelompok".equals(cbTipe.getValue());
-            vboxAnggota.setVisible(isKelompok);
-            vboxAnggota.setManaged(isKelompok);
-        });
-        
-        // Button untuk menambahkan anggota ke list
-        btnTambahAnggota.setOnAction(e -> {
-            String anggota = txtAnggotaKelompok.getText().trim();
-            if (!anggota.isEmpty() && !daftarAnggota.contains(anggota)) {
-                daftarAnggota.add(anggota);
-                lvAnggota.getItems().add(anggota);
-                txtAnggotaKelompok.clear();
-            }
-        });
-        
-        // Button simpan
-        btnSimpan.setOnAction(e -> simpanTugas());
-        
-        // Button batal
-        btnBatal.setOnAction(e -> {
-            Stage stage = (Stage) btnBatal.getScene().getWindow();
-            stage.close();
-        });
-        
-        // Set visibilitas awal panel anggota
-        vboxAnggota.setVisible(false);
-        vboxAnggota.setManaged(false);
+
+        btnBatal.setOnAction(e -> ((Stage) btnBatal.getScene().getWindow()).close());
+        btnSimpan.setOnAction(e -> handleSimpan());
     }
-    
-    public void setTugasList(ObservableList<Tugas> tugasList) {
-        this.tugasList = tugasList;
-    }
-    
-    public void setEditMode(boolean editMode) {
-        this.isEditMode = editMode;
-    }
-    
-    public void setTugas(Tugas tugas) {
-        this.tugasToEdit = tugas;
-        
-        // Isi form dengan data tugas
-        txtNama.setText(tugas.getNama());
-        
-        try {
-            LocalDate date = LocalDate.parse(tugas.getDeadline());
-            datePicker.setValue(date);
-        } catch (Exception e) {
-            System.err.println("Format tanggal tidak valid: " + tugas.getDeadline());
-        }
-        
-        cbPrioritas.setValue(tugas.getPrioritas());
-        txtMataKuliah.setText(tugas.getMataKuliah());
-        cbTipe.setValue(tugas.getTipe());
-        
-        // Jika tugas kelompok, tambahkan daftar anggota
-        if (tugas instanceof TugasKelompok) {
-            vboxAnggota.setVisible(true);
-            vboxAnggota.setManaged(true);
-            
-            TugasKelompok tugasKelompok = (TugasKelompok) tugas;
-            for (Mahasiswa anggota : tugasKelompok.getAnggota()) {
-                daftarAnggota.add(anggota.getNama());
-                lvAnggota.getItems().add(anggota.getNama());
-            }
-        }
-    }
-    
-    private void simpanTugas() {
-        String nama = txtNama.getText().trim();
+
+    private void handleSimpan() {
+        String judul = txtJudul.getText().trim();
+        String deskripsi = txtDeskripsi.getText().trim();
         LocalDate deadline = datePicker.getValue();
         String prioritas = cbPrioritas.getValue();
         String mataKuliah = txtMataKuliah.getText().trim();
         String tipe = cbTipe.getValue();
-        
-        // Validasi input
-        if (nama.isEmpty() || deadline == null || mataKuliah.isEmpty()) {
-            showAlert("Data tidak lengkap. Mohon isi semua field yang diperlukan.");
+
+        if (judul.isEmpty() || deadline == null || prioritas == null || mataKuliah.isEmpty() || tipe == null) {
+            showAlert("Semua field wajib diisi!", Alert.AlertType.ERROR);
             return;
         }
-        
-        // Format tanggal
-        String deadlineStr = deadline.format(DateTimeFormatter.ISO_DATE);
-        
-        if (isEditMode && tugasToEdit != null) {
-            // Mode edit: update tugas yang ada
-            tugasToEdit.setNama(nama);
-            tugasToEdit.setDeadline(deadlineStr);
-            tugasToEdit.setPrioritas(prioritas);
-            tugasToEdit.setMataKuliah(mataKuliah);
-            
-            // Jika tipe berubah, perlu buat objek baru
-            if (!tugasToEdit.getTipe().equals(tipe)) {
-                int index = tugasList.indexOf(tugasToEdit);
-                tugasList.remove(tugasToEdit);
-                
-                if ("Kelompok".equals(tipe)) {
-                    TugasKelompok tugasBaru = new TugasKelompok(nama, deadlineStr, prioritas, mataKuliah);
-                    for (String anggotaNama : daftarAnggota) {
-                        tugasBaru.tambahAnggota(new Mahasiswa(anggotaNama));
-                    }
-                    tugasList.add(index, tugasBaru);
-                } else {
-                    tugasList.add(index, new TugasIndividu(nama, deadlineStr, prioritas, mataKuliah));
-                }
-            } else if (tugasToEdit instanceof TugasKelompok) {
-                // Update daftar anggota jika masih tugas kelompok
-                TugasKelompok tugasKelompok = (TugasKelompok) tugasToEdit;
-                tugasKelompok.getAnggota().clear();
-                for (String anggotaNama : daftarAnggota) {
-                    tugasKelompok.tambahAnggota(new Mahasiswa(anggotaNama));
-                }
-            }
-        } else {
-            // Mode tambah: buat tugas baru
-            if ("Kelompok".equals(tipe)) {
-                TugasKelompok tugasBaru = new TugasKelompok(nama, deadlineStr, prioritas, mataKuliah);
-                for (String anggotaNama : daftarAnggota) {
-                    tugasBaru.tambahAnggota(new Mahasiswa(anggotaNama));
-                }
-                tugasList.add(tugasBaru);
+
+        try (Connection conn = DatabaseConnection.getConnection()) {
+            if (editMode && tugas != null) {
+                String sql = "UPDATE tugas SET judul=?, deskripsi=?, deadline=?, prioritas=?, mata_kuliah=?, tipe=? WHERE id=?";
+                PreparedStatement stmt = conn.prepareStatement(sql);
+                stmt.setString(1, judul);
+                stmt.setString(2, deskripsi);
+                stmt.setString(3, deadline.toString());
+                stmt.setString(4, prioritas);
+                stmt.setString(5, mataKuliah);
+                stmt.setString(6, tipe);
+                stmt.setInt(7, tugas.getId());
+                stmt.executeUpdate();
             } else {
-                tugasList.add(new TugasIndividu(nama, deadlineStr, prioritas, mataKuliah));
+                String sql = "INSERT INTO tugas (judul, deskripsi, deadline, prioritas, mata_kuliah, tipe) VALUES (?, ?, ?, ?, ?, ?)";
+                PreparedStatement stmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
+                stmt.setString(1, judul);
+                stmt.setString(2, deskripsi);
+                stmt.setString(3, deadline.toString());
+                stmt.setString(4, prioritas);
+                stmt.setString(5, mataKuliah);
+                stmt.setString(6, tipe);
+                stmt.executeUpdate();
+                ResultSet rs = stmt.getGeneratedKeys();
+                int tugasId = -1;
+                if (rs.next()) tugasId = rs.getInt(1);
+
+                // Assign ke mahasiswa yang login (tabel tugas_mahasiswa)
+                if (tugasId > 0 && mahasiswa != null) {
+                    String sql2 = "INSERT INTO tugas_mahasiswa (id_tugas, id_mahasiswa) VALUES (?, ?)";
+                    PreparedStatement stmt2 = conn.prepareStatement(sql2);
+                    stmt2.setInt(1, tugasId);
+                    stmt2.setInt(2, mahasiswa.getId());
+                    stmt2.executeUpdate();
+                }
             }
+            if (onTugasSaved != null) onTugasSaved.run();
+            ((Stage) btnSimpan.getScene().getWindow()).close();
+        } catch (SQLException e) {
+            e.printStackTrace();
+            showAlert("Gagal menyimpan tugas! " + e.getMessage(), Alert.AlertType.ERROR);
         }
-        
-        // Tutup form
-        Stage stage = (Stage) btnSimpan.getScene().getWindow();
-        stage.close();
     }
-    
-    private void showAlert(String message) {
-        Alert alert = new Alert(Alert.AlertType.WARNING);
-        alert.setTitle("Peringatan");
-        alert.setHeaderText(null);
-        alert.setContentText(message);
+
+    private void showAlert(String msg, Alert.AlertType type) {
+        Alert alert = new Alert(type);
+        alert.setTitle(type == Alert.AlertType.ERROR ? "Error" : "Info");
+        alert.setContentText(msg);
         alert.showAndWait();
     }
 }

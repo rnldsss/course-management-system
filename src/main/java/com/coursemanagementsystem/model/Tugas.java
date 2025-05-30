@@ -1,57 +1,42 @@
 package com.coursemanagementsystem.model;
 
 public class Tugas {
-    protected String nama;
-    protected String deadline;
-    protected String prioritas;
-    protected String mataKuliah;
-    protected String tipe; // "Individu" atau "Kelompok"
+    private int id;
+    private String judul;
+    private String deskripsi;
+    private String deadline;
+    private String prioritas;
+    private String mataKuliah;
+    private String tipe;
 
-    public Tugas(String nama, String deadline, String prioritas, String mataKuliah) {
-        this.nama = nama;
+    // Constructor utama (untuk database)
+    public Tugas(int id, String judul, String deskripsi, String deadline, String prioritas, String mataKuliah, String tipe) {
+        this.id = id;
+        this.judul = judul;
+        this.deskripsi = deskripsi;
         this.deadline = deadline;
         this.prioritas = prioritas;
         this.mataKuliah = mataKuliah;
-        this.tipe = "Individu"; // default
-    }
-
-    public String getNama() {
-        return nama;
-    }
-
-    public void setNama(String nama) {
-        this.nama = nama;
-    }
-
-    public String getDeadline() {
-        return deadline;
-    }
-
-    public void setDeadline(String deadline) {
-        this.deadline = deadline;
-    }
-
-    public String getPrioritas() {
-        return prioritas;
-    }
-
-    public void setPrioritas(String prioritas) {
-        this.prioritas = prioritas;
-    }
-
-    public String getMataKuliah() {
-        return mataKuliah;
-    }
-
-    public void setMataKuliah(String mataKuliah) {
-        this.mataKuliah = mataKuliah;
-    }
-
-    public String getTipe() {
-        return tipe;
-    }
-
-    public void setTipe(String tipe) {
         this.tipe = tipe;
     }
+
+    // Constructor tambahan (untuk subclass)
+    public Tugas(String judul, String deadline, String prioritas, String mataKuliah) {
+        this(0, judul, "", deadline, prioritas, mataKuliah, "");
+    }
+
+    // Supaya subclass bisa set tipe
+    protected void setTipe(String tipe) {
+        this.tipe = tipe;
+    }
+
+    public int getId() { return id; }
+    public String getJudul() { return judul; }
+    public String getDeskripsi() { return deskripsi; }
+    public String getDeadline() { return deadline; }
+    public String getPrioritas() { return prioritas; }
+    public String getMataKuliah() { return mataKuliah; }
+    public String getTipe() { return tipe; }
+    // Untuk kompatibilitas getNama() (jika di subclass butuh)
+    public String getNama() { return judul; }
 }
