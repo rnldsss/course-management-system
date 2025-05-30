@@ -8,6 +8,8 @@ public class Tugas {
     private String prioritas;
     private String mataKuliah;
     private String tipe;
+    private String status;
+    private String uploadPath;
 
     // Constructor utama (untuk database)
     public Tugas(int id, String judul, String deskripsi, String deadline, String prioritas, String mataKuliah, String tipe) {
@@ -18,6 +20,8 @@ public class Tugas {
         this.prioritas = prioritas;
         this.mataKuliah = mataKuliah;
         this.tipe = tipe;
+        this.status = "Belum Dikerjakan";
+        this.uploadPath = "";
     }
 
     // Constructor tambahan (untuk subclass)
@@ -37,6 +41,22 @@ public class Tugas {
     public String getPrioritas() { return prioritas; }
     public String getMataKuliah() { return mataKuliah; }
     public String getTipe() { return tipe; }
+    public String getStatus() { return status; }
+    public String getUploadPath() { return uploadPath; }
+    
+    public void setStatus(String status) { this.status = status; }
+    public void setUploadPath(String uploadPath) { this.uploadPath = uploadPath; }
+
     // Untuk kompatibilitas getNama() (jika di subclass butuh)
     public String getNama() { return judul; }
+
+    // Constructor tambahan sesuai permintaan
+    public Tugas(int id, String judul, String deadline, String prioritas, String mataKuliah, String tipe) {
+        this.id = id;
+        this.judul = judul;
+        this.deadline = deadline;
+        this.prioritas = prioritas;
+        this.mataKuliah = mataKuliah;
+        this.tipe = tipe;
+    }
 }

@@ -10,7 +10,6 @@
       spacing="0">
 
     <VBox styleClass="header-container" alignment="CENTER">
-        <VBox alignment="CENTER" styleClass="header-image" />
         <Label text="Manajemen Tugas Mahasiswa" styleClass="header-title" />
         <Label text="Kelola tugas kuliah Anda dengan mudah" styleClass="header-subtitle" />
     </VBox>
@@ -26,28 +25,28 @@
         <HBox spacing="16">
             <VBox styleClass="dashboard-card" HBox.hgrow="ALWAYS">
                 <padding><Insets top="16" right="16" bottom="16" left="16" /></padding>
-                <Label text="Mendesak" style="-fx-font-weight: bold; -fx-text-fill: #b91c1c;" />
-                <Label text="2" style="-fx-font-size: 28px; -fx-font-weight: bold; -fx-text-fill: #b91c1c;" />
-                <Label text="tugas mendekati deadline" style="-fx-text-fill: #64748b;" />
+                <Label text="Mendesak" styleClass="label-red" />
+                <Label text="2" styleClass="label-red label-count" />
+                <Label text="tugas mendekati deadline" styleClass="label-muted" />
             </VBox>
             <VBox styleClass="dashboard-card" HBox.hgrow="ALWAYS">
                 <padding><Insets top="16" right="16" bottom="16" left="16" /></padding>
-                <Label text="Aktif" style="-fx-font-weight: bold; -fx-text-fill: #0369a1;" />
-                <Label text="3" style="-fx-font-size: 28px; -fx-font-weight: bold; -fx-text-fill: #0369a1;" />
-                <Label text="tugas sedang dikerjakan" style="-fx-text-fill: #64748b;" />
+                <Label text="Aktif" styleClass="label-blue" />
+                <Label text="3" styleClass="label-blue label-count" />
+                <Label text="tugas sedang dikerjakan" styleClass="label-muted" />
             </VBox>
             <VBox styleClass="dashboard-card" HBox.hgrow="ALWAYS">
                 <padding><Insets top="16" right="16" bottom="16" left="16" /></padding>
-                <Label text="Selesai" style="-fx-font-weight: bold; -fx-text-fill: #166534;" />
-                <Label text="0" style="-fx-font-size: 28px; -fx-font-weight: bold; -fx-text-fill: #166534;" />
-                <Label text="tugas telah diselesaikan" style="-fx-text-fill: #64748b;" />
+                <Label text="Selesai" styleClass="label-green" />
+                <Label text="0" styleClass="label-green label-count" />
+                <Label text="tugas telah diselesaikan" styleClass="label-muted" />
             </VBox>
         </HBox>
         <VBox VBox.vgrow="ALWAYS" styleClass="dashboard-card" spacing="16">
             <HBox alignment="CENTER_LEFT">
                 <Label text="Daftar Tugas" styleClass="section-title" />
                 <Region HBox.hgrow="ALWAYS" />
-                <ComboBox fx:id="comboFilter" promptText="Filter" />
+                <ComboBox fx:id="comboFilter" promptText="Filter" styleClass="combo-filter"/>
             </HBox>
             <TableView fx:id="tableTugas" VBox.vgrow="ALWAYS">
                 <columns>
@@ -57,7 +56,6 @@
                     <TableColumn text="Mata Kuliah" fx:id="colMataKuliah" prefWidth="150"/>
                     <TableColumn text="Tipe" fx:id="colTipe" prefWidth="100"/>
                     <TableColumn text="Aksi" fx:id="colAksi" prefWidth="150"/>
-                    <TableColumn text="Status" fx:id="colStatus" prefWidth="150"/>
                 </columns>
             </TableView>
         </VBox>
