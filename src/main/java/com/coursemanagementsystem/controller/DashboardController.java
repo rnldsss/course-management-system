@@ -32,7 +32,9 @@ public class DashboardController {
     @FXML
     private Button btnTambah;
 
-    // **Tambahkan ini untuk search bar**
+    @FXML
+    private ComboBox<String> comboFilter; // Tambahan ComboBox filter
+
     @FXML
     private TextField searchField;
 
@@ -41,6 +43,10 @@ public class DashboardController {
 
     @FXML
     public void initialize() {
+        // Inisialisasi comboFilter dengan pilihan filter
+        comboFilter.getItems().addAll("Semua", "Mendesak", "Sedang dikerjakan", "Selesai");
+        comboFilter.getSelectionModel().selectFirst(); // Default pilih "Semua"
+
         // Konfigurasi kolom tabel
         colNama.setCellValueFactory(new PropertyValueFactory<>("nama"));
         colDeadline.setCellValueFactory(new PropertyValueFactory<>("deadline"));
@@ -48,41 +54,85 @@ public class DashboardController {
         colMataKuliah.setCellValueFactory(new PropertyValueFactory<>("mataKuliah"));
         colTipe.setCellValueFactory(new PropertyValueFactory<>("tipe"));
 
-        // Tambahkan kolom Aksi dengan tombol Edit dan Hapus
+        // Setup kolom Aksi
         setupAksiColumn();
 
-        // Inisialisasi filtered list untuk search
+        // Inisialisasi filtered list untuk search dan filter
         filteredTugas = new FilteredList<>(tugasList, p -> true);
         tableTugas.setItems(filteredTugas);
 
         // Listener searchField untuk filter realtime
-        searchField.textProperty().addListener((obs, oldVal, newVal) -> {
-            filteredTugas.setPredicate(tugas -> {
-                if (newVal == null || newVal.isEmpty()) {
-                    return true; // Tampilkan semua jika kosong
-                }
-                String lowerCaseFilter = newVal.toLowerCase();
+        searchField.textProperty().addListener((obs, oldVal, newVal) -> filterTugas());
 
-                if (tugas.getNama().toLowerCase().contains(lowerCaseFilter)) {
-                    return true;
-                } else if (tugas.getMataKuliah().toLowerCase().contains(lowerCaseFilter)) {
-                    return true;
-                } else if (tugas.getPrioritas().toLowerCase().contains(lowerCaseFilter)) {
-                    return true;
-                }
-                return false;
-            });
-        });
+        // Listener comboFilter untuk filter berdasarkan status
+        comboFilter.valueProperty().addListener((obs, oldVal, newVal) -> filterTugas());
 
-        // Event handler untuk tombol Tambah
-        btnTambah.setOnAction(e -> tambahTugas());
-
-        // Tambahkan beberapa data contoh
+        // Tambahkan data contoh
         tambahDataContoh();
 
-        // Cek notifikasi tugas mendekati deadline
+        // Cek notifikasi deadline
         cekNotifikasiDeadline();
     }
+
+    // Method untuk filter data tugas berdasarkan searchField dan comboFilter
+    private void filterTugas() {
+        String searchText = searchField.getText() == null ? "" : searchField.getText().toLowerCase().trim();
+        String filterStatus = comboFilter.getValue();
+
+        filteredTugas.setPredicate(tugas -> {
+            // Filter berdasarkan search text (nama, mata kuliah, prioritas)
+            boolean matchesSearch = searchText.isEmpty() ||
+                    tugas.getNama().toLowerCase().contains(searchText) ||
+                    tugas.getMataKuliah().toLowerCase().contains(searchText) ||
+                    tugas.getPrioritas().toLowerCase().contains(searchText);
+
+            if (!matchesSearch)
+                return false;
+
+            // Filter berdasarkan status tugas
+            if (filterStatus == null || filterStatus.equals("Semua")) {
+                return true; // tampilkan semua
+            }
+
+            switch (filterStatus) {
+                case "Mendesak":
+                    return isMendesak(tugas);
+                case "Sedang dikerjakan":
+                    return isSedangDikerjakan(tugas);
+                case "Selesai":
+                    return isSelesai(tugas);
+                default:
+                    return true;
+            }
+        });
+    }
+
+    // Contoh metode logika status, sesuaikan dengan atribut model tugas kamu
+    private boolean isMendesak(Tugas tugas) {
+        try {
+            LocalDate today = LocalDate.now();
+            LocalDate deadline = LocalDate.parse(tugas.getDeadline());
+            long daysDiff = ChronoUnit.DAYS.between(today, deadline);
+            // Mendesak: deadline 3 hari ke depan dan belum selesai
+            return daysDiff >= 0 && daysDiff <= 3 && !isSelesai(tugas);
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    private boolean isSedangDikerjakan(Tugas tugas) {
+        // Contoh: prioritas bukan "Selesai" dan bukan mendesak
+        // Sesuaikan dengan atribut status yang kamu miliki di model Tugas
+        return !isSelesai(tugas) && !isMendesak(tugas);
+    }
+
+    private boolean isSelesai(Tugas tugas) {
+        // Jika kamu punya atribut status selesai, gunakan di sini
+        // Contoh sementara:
+        return false; // Ganti dengan logika sesungguhnya
+    }
+
+    // ... kode lain tetap sama seperti yang kamu berikan sebelumnya ...
 
     private void setupAksiColumn() {
         Callback<TableColumn<Tugas, Void>, TableCell<Tugas, Void>> cellFactory = new Callback<>() {
@@ -125,7 +175,6 @@ public class DashboardController {
     }
 
     private void tambahDataContoh() {
-        // Tambahkan beberapa contoh tugas untuk demo
         tugasList.add(new TugasIndividu("Membuat ERD", "2025-05-27", "Tinggi", "Basis Data"));
         tugasList.add(new TugasIndividu("Laporan Praktikum", "2025-05-25", "Menengah", "Struktur Data"));
 
