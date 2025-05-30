@@ -72,8 +72,11 @@ public class DashboardController {
 
         // Cek notifikasi deadline
         cekNotifikasiDeadline();
-    }
 
+        // Perbaikan: inisialisasi event handler tombol tambah
+        btnTambah.setOnAction(e -> tambahTugas());
+    }
+    
     // Method untuk filter data tugas berdasarkan searchField dan comboFilter
     private void filterTugas() {
         String searchText = searchField.getText() == null ? "" : searchField.getText().toLowerCase().trim();
