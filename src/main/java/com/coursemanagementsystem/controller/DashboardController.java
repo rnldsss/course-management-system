@@ -8,12 +8,15 @@ import javafx.collections.*;
 import javafx.collections.transformation.FilteredList;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.stage.FileChooser;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.util.Callback;
 import javafx.event.ActionEvent;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.VBox;
 
+import java.io.File;
 import java.io.IOException;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -29,6 +32,8 @@ public class DashboardController {
     private TableColumn<Tugas, String> colNama, colDeadline, colPrioritas, colMataKuliah, colTipe;
     @FXML
     private TableColumn<Tugas, Void> colAksi;
+    @FXML
+    private TableColumn<Tugas, Void> colStatus;
     @FXML
     private Button btnTambah;
 
@@ -53,6 +58,80 @@ public class DashboardController {
         colPrioritas.setCellValueFactory(new PropertyValueFactory<>("prioritas"));
         colMataKuliah.setCellValueFactory(new PropertyValueFactory<>("mataKuliah"));
         colTipe.setCellValueFactory(new PropertyValueFactory<>("tipe"));
+
+        // --- Kolom status dengan checkbox, label, dan tombol upload tugas ---
+        colStatus.setCellFactory(param -> new TableCell<Tugas, Void>() {
+    private final CheckBox checkBox = new CheckBox();
+    private final Button uploadBtn = new Button();
+    private final Label lblStatus = new Label();
+    private final Label lblUploadDone = new Label("Selesai diupload");
+
+    private final HBox barisAtas = new HBox(16, checkBox, uploadBtn); // spacing lebih lebar
+    private final VBox vbox = new VBox(8, barisAtas, lblStatus); // spacing antar baris
+
+    {
+        barisAtas.setAlignment(javafx.geometry.Pos.CENTER_LEFT);
+        vbox.setAlignment(javafx.geometry.Pos.CENTER_LEFT);
+        vbox.setPadding(new javafx.geometry.Insets(4, 0, 4, 0)); // padding vertikal
+
+        checkBox.setOnAction(event -> {
+            Tugas tugas = getTableView().getItems().get(getIndex());
+            if (checkBox.isSelected()) {
+                tugas.setStatus("Sedang Dikerjakan");
+                lblStatus.setText("Sedang Dikerjakan");
+            } else {
+                tugas.setStatus("Belum Dikerjakan");
+                lblStatus.setText("Belum Dikerjakan");
+            }
+        });
+
+        uploadBtn.setOnAction(event -> {
+            FileChooser fileChooser = new FileChooser();
+            fileChooser.setTitle("Upload Tugas");
+            Stage stage = (Stage) getTableView().getScene().getWindow();
+            File file = fileChooser.showOpenDialog(stage);
+            if (file != null) {
+                Tugas tugas = getTableView().getItems().get(getIndex());
+                tugas.setUploadPath(file.getAbsolutePath());
+                getTableView().refresh();
+            }
+        });
+
+        checkBox.getStyleClass().add("custom-checkbox");
+        uploadBtn.getStyleClass().add("upload-btn");
+        lblStatus.getStyleClass().add("status-label");
+        lblUploadDone.setStyle("-fx-text-fill: #16a34a; -fx-font-size: 11px;");
+    }
+
+    @Override
+    protected void updateItem(Void item, boolean empty) {
+        super.updateItem(item, empty);
+        if (empty) {
+            setGraphic(null);
+        } else {
+            Tugas tugas = getTableView().getItems().get(getIndex());
+            boolean sedangDikerjakan = "Sedang Dikerjakan".equals(tugas.getStatus());
+            checkBox.setSelected(sedangDikerjakan);
+            lblStatus.setText(sedangDikerjakan ? "Sedang Dikerjakan" : "Belum Dikerjakan");
+
+            // Upload logic
+            if (tugas.getUploadPath() != null && !tugas.getUploadPath().isEmpty()) {
+                uploadBtn.setText("Selesai");
+                uploadBtn.setDisable(true);
+                if (!vbox.getChildren().contains(lblUploadDone)) {
+                    vbox.getChildren().add(lblUploadDone);
+                }
+            } else {
+                uploadBtn.setText("Upload Tugas");
+                uploadBtn.setDisable(false);
+                vbox.getChildren().remove(lblUploadDone);
+            }
+            setGraphic(vbox);
+        }
+    }
+});
+
+
 
         // Setup kolom Aksi
         setupAksiColumn();
@@ -107,13 +186,12 @@ public class DashboardController {
         });
     }
 
-    // Contoh metode logika status, sesuaikan dengan atribut model tugas kamu
+    // Example methods to check status
     private boolean isMendesak(Tugas tugas) {
         try {
             LocalDate today = LocalDate.now();
             LocalDate deadline = LocalDate.parse(tugas.getDeadline());
             long daysDiff = ChronoUnit.DAYS.between(today, deadline);
-            // Mendesak: deadline 3 hari ke depan dan belum selesai
             return daysDiff >= 0 && daysDiff <= 3 && !isSelesai(tugas);
         } catch (Exception e) {
             return false;
@@ -121,19 +199,14 @@ public class DashboardController {
     }
 
     private boolean isSedangDikerjakan(Tugas tugas) {
-        // Contoh: prioritas bukan "Selesai" dan bukan mendesak
-        // Sesuaikan dengan atribut status yang kamu miliki di model Tugas
-        return !isSelesai(tugas) && !isMendesak(tugas);
+        return "Sedang Dikerjakan".equals(tugas.getStatus());
     }
 
     private boolean isSelesai(Tugas tugas) {
-        // Jika kamu punya atribut status selesai, gunakan di sini
-        // Contoh sementara:
-        return false; // Ganti dengan logika sesungguhnya
+        return "Selesai".equals(tugas.getStatus());
     }
 
-    // ... kode lain tetap sama seperti yang kamu berikan sebelumnya ...
-
+    // Setup kolom Aksi
     private void setupAksiColumn() {
         Callback<TableColumn<Tugas, Void>, TableCell<Tugas, Void>> cellFactory = new Callback<>() {
             @Override
@@ -174,6 +247,7 @@ public class DashboardController {
         colAksi.setCellFactory(cellFactory);
     }
 
+    // Contoh data tugas untuk testing
     private void tambahDataContoh() {
         tugasList.add(new TugasIndividu("Membuat ERD", "2025-05-27", "Tinggi", "Basis Data"));
         tugasList.add(new TugasIndividu("Laporan Praktikum", "2025-05-25", "Menengah", "Struktur Data"));
@@ -184,6 +258,7 @@ public class DashboardController {
         tugasList.add(tugasKelompok);
     }
 
+    // Cek notifikasi deadline
     private void cekNotifikasiDeadline() {
         LocalDate today = LocalDate.now();
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
@@ -215,6 +290,7 @@ public class DashboardController {
         }
     }
 
+    // Menambahkan tugas baru
     private void tambahTugas() {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/coursemanagementsystem/tambah_tugas.fxml"));
@@ -246,6 +322,7 @@ public class DashboardController {
         }
     }
 
+    // Menyunting tugas
     private void editTugas(Tugas tugas) {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/coursemanagementsystem/tambah_tugas.fxml"));
@@ -282,6 +359,7 @@ public class DashboardController {
         }
     }
 
+    // Menghapus tugas
     private void hapusTugas(Tugas tugas) {
         Alert confirmDialog = new Alert(Alert.AlertType.CONFIRMATION);
         confirmDialog.setTitle("Konfirmasi Hapus");

@@ -79,6 +79,7 @@
                     <TableColumn text="Mata Kuliah" fx:id="colMataKuliah" prefWidth="150"/>
                     <TableColumn text="Tipe" fx:id="colTipe" prefWidth="100"/>
                     <TableColumn text="Aksi" fx:id="colAksi" prefWidth="150"/>
+                    <TableColumn text="Status" fx:id="colStatus" prefWidth="150"/>
                 </columns>
             </TableView>
         </VBox>
