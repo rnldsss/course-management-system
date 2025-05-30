@@ -5,90 +5,98 @@
 <?import javafx.geometry.*?>
 <?import javafx.scene.text.*?>
 
-<VBox xmlns="http://javafx.com/javafx/11"
-      xmlns:fx="http://javafx.com/fxml/1"
-      fx:controller="com.coursemanagementsystem.controller.TambahTugasController"
-      spacing="16" styleClass="form-container">
-      
-    <!-- Header -->
-    <HBox alignment="CENTER_LEFT" spacing="16">
-        <VBox HBox.hgrow="ALWAYS">
-            <Label text="Tambah Tugas Baru" styleClass="form-title"/>
-            <Label text="Isi detail tugas yang akan ditambahkan" style="-fx-text-fill: #64748b;"/>
-        </VBox>
-        <Region HBox.hgrow="ALWAYS" />
-        <!-- Progress Indicator -->
-        <HBox alignment="CENTER" style="-fx-background-color: #dbeafe; -fx-background-radius: 50;">
-            <padding>
-                <Insets top="8" right="8" bottom="8" left="8" />
-            </padding>
-            <Label text="1/2" style="-fx-font-weight: bold; -fx-text-fill: #1e40af;" />
-        </HBox>
-    </HBox>
-    
-    <Separator />
-    
-    <!-- Form Fields -->
-    <VBox spacing="16">
-        <!-- Nama Tugas -->
-        <VBox spacing="4">
-            <Label text="Nama Tugas" style="-fx-font-weight: bold; -fx-text-fill: #334155;" />
-            <TextField fx:id="txtNama" promptText="Masukkan nama tugas" />
-        </VBox>
-        
-        <!-- Deadline -->
-        <VBox spacing="4">
-            <Label text="Deadline" style="-fx-font-weight: bold; -fx-text-fill: #334155;" />
-            <DatePicker fx:id="datePicker" promptText="Pilih tanggal" />
-        </VBox>
-        
-        <!-- Prioritas -->
-        <VBox spacing="4">
-            <Label text="Prioritas" style="-fx-font-weight: bold; -fx-text-fill: #334155;" />
-            <ComboBox fx:id="cbPrioritas" promptText="Pilih prioritas" />
-        </VBox>
-        
-        <!-- Mata Kuliah -->
-        <VBox spacing="4">
-            <Label text="Mata Kuliah" style="-fx-font-weight: bold; -fx-text-fill: #334155;" />
-            <TextField fx:id="txtMataKuliah" promptText="Masukkan mata kuliah" />
-        </VBox>
-        
-        <!-- Tipe Tugas -->
-        <VBox spacing="4">
-            <Label text="Tipe Tugas" style="-fx-font-weight: bold; -fx-text-fill: #334155;" />
-            <ComboBox fx:id="cbTipe" promptText="Pilih tipe tugas" />
-        </VBox>
-    </VBox>
-    
-    <!-- Panel untuk anggota kelompok -->
-    <VBox fx:id="vboxAnggota" spacing="12">
-        <Separator />
-        
-        <HBox alignment="CENTER_LEFT" spacing="10">
-            <Label text="Anggota Kelompok" styleClass="section-title" />
+<AnchorPane xmlns="http://javafx.com/javafx/11"
+            xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="com.coursemanagementsystem.controller.TambahTugasController">
+
+    <!-- Bungkus VBox utama dengan AnchorPane dan atur anchor agar isi memenuhi area -->
+    <VBox fx:id="rootVBox" spacing="16" styleClass="form-container"
+          AnchorPane.topAnchor="0" AnchorPane.bottomAnchor="0" AnchorPane.leftAnchor="0" AnchorPane.rightAnchor="0">
+
+        <!-- Header -->
+        <HBox alignment="CENTER_LEFT" spacing="16" HBox.hgrow="ALWAYS">
+            <VBox HBox.hgrow="ALWAYS">
+                <Label text="Tambah Tugas Baru" styleClass="form-title" />
+                <Label text="Isi detail tugas yang akan ditambahkan" style="-fx-text-fill: #64748b;" />
+            </VBox>
             <Region HBox.hgrow="ALWAYS" />
-            <Label text="Optional" style="-fx-text-fill: #64748b; -fx-font-style: italic;" />
+            <!-- Progress Indicator -->
+            <HBox alignment="CENTER" style="-fx-background-color: #dbeafe; -fx-background-radius: 50;">
+                <padding>
+                    <Insets top="8" right="8" bottom="8" left="8" />
+                </padding>
+                <Label text="1/2" style="-fx-font-weight: bold; -fx-text-fill: #1e40af;" />
+            </HBox>
         </HBox>
-        
-        <HBox spacing="10">
-            <TextField fx:id="txtAnggotaKelompok" promptText="Nama anggota kelompok" HBox.hgrow="ALWAYS"/>
-            <Button fx:id="btnTambahAnggota" text="Tambah" styleClass="secondary-btn"/>
-        </HBox>
-        
-        <VBox style="-fx-background-color: #f8fafc; -fx-background-radius: 8; -fx-border-color: #e2e8f0; -fx-border-radius: 8;">
-            <padding>
-                <Insets top="8" right="8" bottom="8" left="8" />
-            </padding>
-            <ListView fx:id="lvAnggota" prefHeight="120" style="-fx-background-color: transparent;" />
+
+        <Separator />
+
+        <!-- Form Fields -->
+        <VBox spacing="16" VBox.vgrow="NEVER">
+
+            <!-- Nama Tugas -->
+            <VBox spacing="4" HBox.hgrow="ALWAYS">
+                <Label text="Nama Tugas" style="-fx-font-weight: bold; -fx-text-fill: #334155;" />
+                <TextField fx:id="txtNama" promptText="Masukkan nama tugas" HBox.hgrow="ALWAYS" />
+            </VBox>
+
+            <!-- Deadline -->
+            <VBox spacing="4" HBox.hgrow="ALWAYS">
+                <Label text="Deadline" style="-fx-font-weight: bold; -fx-text-fill: #334155;" />
+                <DatePicker fx:id="datePicker" promptText="Pilih tanggal" HBox.hgrow="ALWAYS" />
+            </VBox>
+
+            <!-- Prioritas -->
+            <VBox spacing="4" HBox.hgrow="ALWAYS">
+                <Label text="Prioritas" style="-fx-font-weight: bold; -fx-text-fill: #334155;" />
+                <ComboBox fx:id="cbPrioritas" promptText="Pilih prioritas" HBox.hgrow="ALWAYS" />
+            </VBox>
+
+            <!-- Mata Kuliah -->
+            <VBox spacing="4" HBox.hgrow="ALWAYS">
+                <Label text="Mata Kuliah" style="-fx-font-weight: bold; -fx-text-fill: #334155;" />
+                <TextField fx:id="txtMataKuliah" promptText="Masukkan mata kuliah" HBox.hgrow="ALWAYS" />
+            </VBox>
+
+            <!-- Tipe Tugas -->
+            <VBox spacing="4" HBox.hgrow="ALWAYS">
+                <Label text="Tipe Tugas" style="-fx-font-weight: bold; -fx-text-fill: #334155;" />
+                <ComboBox fx:id="cbTipe" promptText="Pilih tipe tugas" HBox.hgrow="ALWAYS" />
+            </VBox>
         </VBox>
-        
-        <Label text="Tips: Tambahkan semua anggota kelompok untuk memudahkan koordinasi." style="-fx-text-fill: #64748b; -fx-font-style: italic;" />
+
+        <!-- Panel untuk anggota kelompok -->
+        <VBox fx:id="vboxAnggota" spacing="8" VBox.vgrow="ALWAYS" prefHeight="250" maxHeight="600" >
+
+            <Separator />
+
+            <HBox alignment="CENTER_LEFT" spacing="8" prefWidth="0">
+                <Label text="Anggota Kelompok" styleClass="section-title" />
+                <Region HBox.hgrow="ALWAYS" />
+                <Label text="Optional" style="-fx-text-fill: #64748b; -fx-font-style: italic;" />
+            </HBox>
+
+            <HBox spacing="8" prefWidth="0">
+                <TextField fx:id="txtAnggotaKelompok" promptText="Nama anggota kelompok" HBox.hgrow="ALWAYS" />
+                <Button fx:id="btnTambahAnggota" text="Tambah" styleClass="secondary-btn" />
+            </HBox>
+
+            <VBox style="-fx-background-color: #f8fafc; -fx-background-radius: 8; -fx-border-color: #e2e8f0; -fx-border-radius: 8;"
+                  VBox.vgrow="ALWAYS" prefHeight="90" maxHeight="600">
+                <padding>
+                    <Insets top="6" right="6" bottom="6" left="6" />
+                </padding>
+                <ListView fx:id="lvAnggota" style="-fx-background-color: transparent;" VBox.vgrow="ALWAYS" />
+            </VBox>
+
+            <Label text="Tips: Tambahkan semua anggota kelompok untuk memudahkan koordinasi."
+                   style="-fx-text-fill: #64748b; -fx-font-style: italic;" wrapText="true" />
+        </VBox>
+
+        <!-- Action Buttons -->
+        <HBox spacing="16" alignment="CENTER_RIGHT" VBox.vgrow="NEVER">
+            <Button fx:id="btnBatal" text="Batal" styleClass="cancel-btn" />
+            <Button fx:id="btnSimpan" text="Simpan" styleClass="primary-btn" />
+        </HBox>
     </VBox>
-    
-    <!-- Action Buttons -->
-    <HBox spacing="16" alignment="CENTER_RIGHT">
-        <Button fx:id="btnBatal" text="Batal" styleClass="cancel-btn"/>
-        <Button fx:id="btnSimpan" text="Simpan" styleClass="primary-btn"/>
-    </HBox>
-</VBox>
+</AnchorPane>

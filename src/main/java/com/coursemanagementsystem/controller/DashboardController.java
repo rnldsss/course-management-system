@@ -5,6 +5,7 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.collections.*;
+import javafx.collections.transformation.FilteredList;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Modality;
@@ -31,7 +32,12 @@ public class DashboardController {
     @FXML
     private Button btnTambah;
 
+    // **Tambahkan ini untuk search bar**
+    @FXML
+    private TextField searchField;
+
     private ObservableList<Tugas> tugasList = FXCollections.observableArrayList();
+    private FilteredList<Tugas> filteredTugas;
 
     @FXML
     public void initialize() {
@@ -45,8 +51,28 @@ public class DashboardController {
         // Tambahkan kolom Aksi dengan tombol Edit dan Hapus
         setupAksiColumn();
 
-        // Set data ke tabel
-        tableTugas.setItems(tugasList);
+        // Inisialisasi filtered list untuk search
+        filteredTugas = new FilteredList<>(tugasList, p -> true);
+        tableTugas.setItems(filteredTugas);
+
+        // Listener searchField untuk filter realtime
+        searchField.textProperty().addListener((obs, oldVal, newVal) -> {
+            filteredTugas.setPredicate(tugas -> {
+                if (newVal == null || newVal.isEmpty()) {
+                    return true; // Tampilkan semua jika kosong
+                }
+                String lowerCaseFilter = newVal.toLowerCase();
+
+                if (tugas.getNama().toLowerCase().contains(lowerCaseFilter)) {
+                    return true;
+                } else if (tugas.getMataKuliah().toLowerCase().contains(lowerCaseFilter)) {
+                    return true;
+                } else if (tugas.getPrioritas().toLowerCase().contains(lowerCaseFilter)) {
+                    return true;
+                }
+                return false;
+            });
+        });
 
         // Event handler untuk tombol Tambah
         btnTambah.setOnAction(e -> tambahTugas());
@@ -119,17 +145,20 @@ public class DashboardController {
                 long daysDiff = ChronoUnit.DAYS.between(today, deadline);
 
                 if (daysDiff <= 3 && daysDiff >= 0) {
-                    if (tugas instanceof Notifikasi) {
-                        ((Notifikasi) tugas).kirimPengingat(tugas);
-
-                        // Tampilkan dialog notifikasi
-                        Alert alert = new Alert(Alert.AlertType.WARNING);
-                        alert.setTitle("Pengingat Tugas");
-                        alert.setHeaderText("Deadline Mendekati");
-                        alert.setContentText(
-                                "Tugas \"" + tugas.getNama() + "\" akan berakhir dalam " + daysDiff + " hari lagi!");
-                        alert.showAndWait();
-                    }
+                    Alert alert = new Alert(Alert.AlertType.WARNING);
+                    alert.setTitle("Pengingat Tugas");
+                    alert.setHeaderText("Deadline Mendekati");
+                    alert.setContentText(
+                            "Tugas \"" + tugas.getNama() + "\" akan berakhir dalam " + daysDiff + " hari lagi!");
+                    alert.showAndWait();
+                } else if (daysDiff < 0) {
+                    Alert alert = new Alert(Alert.AlertType.ERROR);
+                    alert.setTitle("Tugas Terlambat");
+                    alert.setHeaderText("Deadline Sudah Lewat");
+                    alert.setContentText(
+                            "Tugas \"" + tugas.getNama() + "\" sudah melewati deadline sejak " + (-daysDiff)
+                                    + " hari yang lalu!");
+                    alert.showAndWait();
                 }
             } catch (Exception e) {
                 System.err.println("Format tanggal tidak valid: " + tugas.getDeadline());
@@ -148,6 +177,10 @@ public class DashboardController {
             Stage stage = new Stage();
             stage.initModality(Modality.APPLICATION_MODAL);
             stage.setTitle("Tambah Tugas Baru");
+            stage.setWidth(400);
+            stage.setHeight(600);
+            stage.setMinWidth(350);
+            stage.setMinHeight(500);
             Scene scene = new Scene(root);
             scene.getStylesheets()
                     .add(getClass().getResource("/com/coursemanagementsystem/tailwindfx.css").toExternalForm());
@@ -177,13 +210,17 @@ public class DashboardController {
             Stage stage = new Stage();
             stage.initModality(Modality.APPLICATION_MODAL);
             stage.setTitle("Edit Tugas");
+            stage.setWidth(400);
+            stage.setHeight(600);
+            stage.setMinWidth(350);
+            stage.setMinHeight(500);
             Scene scene = new Scene(root);
             scene.getStylesheets()
                     .add(getClass().getResource("/com/coursemanagementsystem/tailwindfx.css").toExternalForm());
             stage.setScene(scene);
             stage.showAndWait();
 
-            // ⬇️ Tambahan penting agar TableView menampilkan data yang diperbarui
+            // Refresh tabel supaya data terbaru tampil
             tableTugas.refresh();
 
         } catch (IOException e) {
