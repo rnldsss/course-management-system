@@ -66,7 +66,7 @@
                     <TableColumn text="Prioritas" fx:id="colPrioritas" prefWidth="90" />
                     <TableColumn text="Mata Kuliah" fx:id="colMataKuliah" prefWidth="130" />
                     <TableColumn text="Tipe" fx:id="colTipe" prefWidth="80" />
-                    <TableColumn text="Status & Upload" fx:id="colStatus" prefWidth="180" />
+                    <TableColumn text="Status &amp; Upload" fx:id="colStatus" prefWidth="180" />
                     <TableColumn text="Aksi" fx:id="colAksi" prefWidth="120" />
                 </columns>
             </TableView>
@@ -75,7 +75,7 @@
 
     <!-- Status Bar -->
     <HBox styleClass="status-bar" alignment="CENTER_LEFT">
-        <Label text="© 2025 Sistem Manajemen Tugas Mahasiswa" styleClass="label-muted" />
+        <Label text="&#169; 2025 Sistem Manajemen Tugas Mahasiswa" styleClass="label-muted" />
         <Region HBox.hgrow="ALWAYS" />
         <Label text="Versi 1.0" styleClass="label-muted" />
     </HBox>
