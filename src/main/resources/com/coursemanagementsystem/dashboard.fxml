@@ -12,71 +12,96 @@
 
     <!-- Header -->
     <VBox styleClass="header-container" alignment="CENTER">
-        <Label text="Manajemen Tugas Mahasiswa" styleClass="header-title" />
-        <Label text="Kelola tugas kuliah Anda dengan mudah" styleClass="header-subtitle" />
+        <Label text="📚 Manajemen Tugas Mahasiswa" styleClass="header-title" />
+        <Label text="Kelola dan pantau progress tugas kuliah Anda dengan mudah dan efisien" styleClass="header-subtitle" />
     </VBox>
 
     <!-- Main Content -->
-    <VBox spacing="24" VBox.vgrow="ALWAYS">
+    <VBox spacing="32" VBox.vgrow="ALWAYS">
         <padding>
-            <Insets top="24" right="24" bottom="24" left="24" />
+            <Insets top="32" right="32" bottom="24" left="32" />
         </padding>
         
         <!-- Search and Add Button -->
-        <HBox spacing="16" alignment="CENTER_LEFT">
-            <TextField fx:id="searchField" promptText="Cari tugas berdasarkan nama, mata kuliah, atau prioritas..." 
-                      styleClass="search-box" HBox.hgrow="ALWAYS" />
-            <Button text="+ Tambah Tugas" fx:id="btnTambah" styleClass="primary-btn" />
+        <HBox spacing="20" alignment="CENTER_LEFT">
+            <VBox HBox.hgrow="ALWAYS">
+                <Label text="🔍 Cari Tugas" styleClass="field-label" />
+                <TextField fx:id="searchField" promptText="Ketik nama tugas, mata kuliah, atau prioritas..." 
+                          styleClass="search-box" HBox.hgrow="ALWAYS" />
+            </VBox>
+            <VBox alignment="BOTTOM_RIGHT">
+                <Label text=" " styleClass="field-label" />
+                <Button text="➕ Tambah Tugas Baru" fx:id="btnTambah" styleClass="primary-btn" />
+            </VBox>
         </HBox>
 
         <!-- Statistics Cards -->
-        <HBox spacing="16">
-            <VBox styleClass="dashboard-card" HBox.hgrow="ALWAYS" alignment="CENTER_LEFT">
-                <Label text="Mendesak" styleClass="label-red" />
-                <Label text="0" styleClass="label-red label-count" />
-                <Label text="tugas mendekati deadline" styleClass="label-muted" />
-            </VBox>
-            
-            <VBox styleClass="dashboard-card" HBox.hgrow="ALWAYS" alignment="CENTER_LEFT">
-                <Label text="Sedang Dikerjakan" styleClass="label-blue" />
-                <Label text="0" styleClass="label-blue label-count" />
-                <Label text="tugas dalam progress" styleClass="label-muted" />
-            </VBox>
-            
-            <VBox styleClass="dashboard-card" HBox.hgrow="ALWAYS" alignment="CENTER_LEFT">
-                <Label text="Selesai" styleClass="label-green" />
-                <Label text="0" styleClass="label-green label-count" />
-                <Label text="tugas telah diselesaikan" styleClass="label-muted" />
-            </VBox>
-        </HBox>
+        <VBox spacing="16">
+            <Label text="📊 Ringkasan Status Tugas" styleClass="section-title" />
+            <HBox spacing="20">
+                <VBox styleClass="dashboard-card animated-card" HBox.hgrow="ALWAYS" alignment="CENTER_LEFT" spacing="8">
+                    <HBox alignment="CENTER_LEFT" spacing="8">
+                        <Label text="🚨" style="-fx-font-size: 20px;" />
+                        <Label text="Mendesak" styleClass="label-red" />
+                    </HBox>
+                    <Label text="0" styleClass="label-red label-count" />
+                    <Label text="tugas mendekati deadline (≤3 hari)" styleClass="label-muted" />
+                </VBox>
+                
+                <VBox styleClass="dashboard-card animated-card" HBox.hgrow="ALWAYS" alignment="CENTER_LEFT" spacing="8">
+                    <HBox alignment="CENTER_LEFT" spacing="8">
+                        <Label text="⚡" style="-fx-font-size: 20px;" />
+                        <Label text="Sedang Dikerjakan" styleClass="label-blue" />
+                    </HBox>
+                    <Label text="0" styleClass="label-blue label-count" />
+                    <Label text="tugas dalam tahap pengerjaan" styleClass="label-muted" />
+                </VBox>
+                
+                <VBox styleClass="dashboard-card animated-card" HBox.hgrow="ALWAYS" alignment="CENTER_LEFT" spacing="8">
+                    <HBox alignment="CENTER_LEFT" spacing="8">
+                        <Label text="✅" style="-fx-font-size: 20px;" />
+                        <Label text="Selesai" styleClass="label-green" />
+                    </HBox>
+                    <Label text="0" styleClass="label-green label-count" />
+                    <Label text="tugas telah diselesaikan" styleClass="label-muted" />
+                </VBox>
+            </HBox>
+        </VBox>
 
         <!-- Tasks Table -->
-        <VBox VBox.vgrow="ALWAYS" styleClass="dashboard-card" spacing="16">
-            <HBox alignment="CENTER_LEFT" spacing="16">
-                <Label text="Daftar Tugas" styleClass="section-title" />
+        <VBox VBox.vgrow="ALWAYS" styleClass="dashboard-card animated-card" spacing="20">
+            <HBox alignment="CENTER_LEFT" spacing="20">
+                <VBox spacing="4">
+                    <Label text="📋 Daftar Tugas Anda" styleClass="section-title" />
+                    <Label text="Kelola semua tugas dalam satu tempat" styleClass="label-muted" />
+                </VBox>
                 <Region HBox.hgrow="ALWAYS" />
-                <ComboBox fx:id="comboFilter" promptText="Filter berdasarkan status" 
-                         styleClass="combo-filter" prefWidth="200" />
+                <VBox alignment="CENTER_RIGHT">
+                    <Label text="Filter Status" styleClass="field-label" />
+                    <ComboBox fx:id="comboFilter" promptText="Pilih status untuk difilter" 
+                             styleClass="combo-filter" prefWidth="220" />
+                </VBox>
             </HBox>
             
-            <TableView fx:id="tableTugas" VBox.vgrow="ALWAYS">
+            <TableView fx:id="tableTugas" VBox.vgrow="ALWAYS" style="-fx-table-cell-border-color: transparent;">
                 <columns>
-                    <TableColumn text="Judul" fx:id="colNama" prefWidth="180" />
-                    <TableColumn text="Deadline" fx:id="colDeadline" prefWidth="100" />
-                    <TableColumn text="Prioritas" fx:id="colPrioritas" prefWidth="90" />
-                    <TableColumn text="Mata Kuliah" fx:id="colMataKuliah" prefWidth="130" />
-                    <TableColumn text="Tipe" fx:id="colTipe" prefWidth="80" />
-                    <TableColumn text="Status &amp; Upload" fx:id="colStatus" prefWidth="180" />
-                    <TableColumn text="Aksi" fx:id="colAksi" prefWidth="120" />
+                    <TableColumn text="📝 Judul Tugas" fx:id="colNama" prefWidth="200" />
+                    <TableColumn text="📅 Deadline" fx:id="colDeadline" prefWidth="120" />
+                    <TableColumn text="⭐ Prioritas" fx:id="colPrioritas" prefWidth="100" />
+                    <TableColumn text="📚 Mata Kuliah" fx:id="colMataKuliah" prefWidth="150" />
+                    <TableColumn text="👥 Tipe" fx:id="colTipe" prefWidth="90" />
+                    <TableColumn text="📊 Status &amp; Upload" fx:id="colStatus" prefWidth="200" />
+                    <TableColumn text="⚙️ Aksi" fx:id="colAksi" prefWidth="140" />
                 </columns>
             </TableView>
         </VBox>
     </VBox>
 
     <!-- Status Bar -->
-    <HBox styleClass="status-bar" alignment="CENTER_LEFT">
-        <Label text="&#169; 2025 Sistem Manajemen Tugas Mahasiswa" styleClass="label-muted" />
+    <HBox styleClass="status-bar" alignment="CENTER_LEFT" spacing="12">
+        <Label text="💼" style="-fx-font-size: 14px;" />
+        <Label text="© 2025 Sistem Manajemen Tugas Mahasiswa" styleClass="label-muted" />
         <Region HBox.hgrow="ALWAYS" />
-        <Label text="Versi 1.0" styleClass="label-muted" />
+        <Label text="🚀 Versi 1.0 - Modern UI" styleClass="label-muted" />
     </HBox>
 </VBox>
