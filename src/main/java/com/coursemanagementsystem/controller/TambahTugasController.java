@@ -38,12 +38,12 @@ public class TambahTugasController {
         listViewAnggota.setItems(anggotaDisplayList);
 
         // Event handlers
-        btnSimpan.setOnAction(e -> simpanTugas());
-        btnBatal.setOnAction(e -> close());
-        btnTambahAnggota.setOnAction(e -> tambahAnggotaKelompok());
+        btnSimpan.setOnAction(_ -> simpanTugas());
+        btnBatal.setOnAction(_ -> close());
+        btnTambahAnggota.setOnAction(_ -> tambahAnggotaKelompok());
 
         // Show/hide anggota section based on tipe selection
-        cbTipe.valueProperty().addListener((obs, oldVal, newVal) -> {
+        cbTipe.valueProperty().addListener((_, _, newVal) -> {
             boolean isKelompok = "Kelompok".equals(newVal);
             vboxAnggotaKelompok.setVisible(isKelompok);
             vboxAnggotaKelompok.setManaged(isKelompok);
@@ -60,7 +60,7 @@ public class TambahTugasController {
     }
 
     private void setupAnggotaListView() {
-        listViewAnggota.setCellFactory(listView -> {
+        listViewAnggota.setCellFactory(_ -> {
             ListCell<String> cell = new ListCell<String>() {
                 @Override
                 protected void updateItem(String item, boolean empty) {
@@ -77,7 +77,7 @@ public class TambahTugasController {
             // Add context menu for removing members
             ContextMenu contextMenu = new ContextMenu();
             MenuItem removeItem = new MenuItem("🗑️ Hapus Anggota");
-            removeItem.setOnAction(e -> {
+            removeItem.setOnAction(_ -> {
                 int index = cell.getIndex();
                 if (index >= 0 && index < anggotaKelompok.size()) {
                     String memberName = anggotaKelompok.get(index).getNama();
@@ -94,7 +94,7 @@ public class TambahTugasController {
             });
             contextMenu.getItems().add(removeItem);
 
-            cell.emptyProperty().addListener((obs, wasEmpty, isNowEmpty) -> {
+            cell.emptyProperty().addListener((_, _, isNowEmpty) -> {
                 if (isNowEmpty) {
                     cell.setContextMenu(null);
                 } else {

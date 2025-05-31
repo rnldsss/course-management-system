@@ -39,6 +39,7 @@ public class DashboardController {
     private FilteredList<Tugas> filteredTugas;
 
     @FXML
+    @SuppressWarnings("unused")
     public void initialize() {
         // Set up TableView columns
         titleColumn.setCellValueFactory(cellData -> cellData.getValue().judulProperty());
@@ -56,7 +57,7 @@ public class DashboardController {
         filterStatus.valueProperty().addListener((obs, oldVal, newVal) -> filterTugas());
         searchField.textProperty().addListener((obs, oldVal, newVal) -> filterTugas());
 
-        filteredTugas = new FilteredList<>(tugasList, p -> true);
+        filteredTugas = new FilteredList<>(tugasList, tugas -> true);
         taskTable.setItems(filteredTugas);
 
         loadTugasFromDatabase();
@@ -127,6 +128,7 @@ public class DashboardController {
         });
     }
 
+    @SuppressWarnings("unused")
     private void setupActionColumn() {
         actionColumn.setCellFactory(param -> new TableCell<>() {
             private final Button btnEdit = new Button("Edit");
@@ -135,7 +137,6 @@ public class DashboardController {
 
             {
                 btnEdit.setOnAction(e -> {
-                    Tugas tugas = getTableView().getItems().get(getIndex());
                     showAlert("Info", "Fitur edit belum tersedia.", Alert.AlertType.INFORMATION);
                 });
                 btnHapus.setOnAction(e -> {

@@ -38,3 +38,4 @@ public class TugasKelompok extends Tugas implements Notifikasi {
         }
     }
 }
+// No changes needed here; fix required in Tugas.java (add constructor and getters).

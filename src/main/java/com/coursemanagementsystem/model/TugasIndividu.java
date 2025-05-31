@@ -2,7 +2,8 @@ package com.coursemanagementsystem.model;
 
 public class TugasIndividu extends Tugas implements Notifikasi {
     public TugasIndividu(String nama, String deadline, String prioritas, String mataKuliah) {
-        super(nama, deadline, prioritas, mataKuliah);
+        super(nama, deadline, prioritas);
+        setMataKuliah(mataKuliah);
         setTipe("Individu");
     }
 
