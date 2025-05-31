@@ -10,11 +10,9 @@
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <!-- Change Java version to match your JDK -->
         <maven.compiler.source>23</maven.compiler.source>
         <maven.compiler.target>23</maven.compiler.target>
-        <!-- Use a compatible JavaFX version -->
-        <javafx.version>17.0.9</javafx.version>
+        <javafx.version>23.0.2</javafx.version>
     </properties>
 
     <dependencies>
@@ -28,11 +26,31 @@
             <artifactId>javafx-fxml</artifactId>
             <version>${javafx.version}</version>
         </dependency>
-        <!-- Add other dependencies as needed -->
+        <!-- Tambahkan dependency lain di sini jika diperlukan -->
     </dependencies>
+
+    <repositories>
+        <repository>
+            <id>openjfx</id>
+            <url>https://repo.maven.apache.org/maven2</url>
+        </repository>
+    </repositories>
 
     <build>
         <plugins>
+            <!-- Plugin untuk auto-detect OS agar javafx.platform otomatis -->
+            <plugin>
+                <groupId>kr.motd.maven</groupId>
+                <artifactId>os-maven-plugin</artifactId>
+                <version>1.7.0</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>detect</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
