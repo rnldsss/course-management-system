@@ -1,8 +1,6 @@
 package com.coursemanagementsystem.controller;
 
 import javafx.fxml.FXML;
-import javafx.fxml.FXMLLoader;
-import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.collections.*;
@@ -11,6 +9,8 @@ import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
+import javafx.scene.Scene;
+import javafx.fxml.FXMLLoader;
 
 import java.io.File;
 import java.sql.*;
@@ -33,18 +33,17 @@ public class DashboardController {
     private TableColumn<Tugas, Void> colStatus;
     @FXML
     private Button btnTambah;
-    @FXML
-    private ComboBox<String> comboFilter;
-    @FXML
-    private TextField searchField;
+    // ComboBox filter DINONAKTIFKAN jika tidak ada di FXML
+    // @FXML private ComboBox<String> comboFilter;
+    @FXML private TextField searchField;
 
     private ObservableList<Tugas> tugasList = FXCollections.observableArrayList();
     private FilteredList<Tugas> filteredTugas;
 
     @FXML
     public void initialize() {
-        comboFilter.getItems().addAll("Semua", "Mendesak", "Sedang Dikerjakan", "Selesai");
-        comboFilter.getSelectionModel().selectFirst();
+        // KOMEN/REMOVE: comboFilter.getItems().addAll("Semua", "Mendesak", "Sedang Dikerjakan", "Selesai");
+        // KOMEN/REMOVE: comboFilter.getSelectionModel().selectFirst();
 
         colNama.setCellValueFactory(new PropertyValueFactory<>("judul"));
         colDeadline.setCellValueFactory(new PropertyValueFactory<>("deadline"));
@@ -127,7 +126,7 @@ public class DashboardController {
         tableTugas.setItems(filteredTugas);
 
         searchField.textProperty().addListener((obs, oldVal, newVal) -> filterTugas());
-        comboFilter.valueProperty().addListener((obs, oldVal, newVal) -> filterTugas());
+        // KOMEN/REMOVE: comboFilter.valueProperty().addListener((obs, oldVal, newVal) -> filterTugas());
 
         btnTambah.setOnAction(e -> tambahTugas());
 
@@ -139,19 +138,19 @@ public class DashboardController {
         tugasList.clear();
         try (Connection conn = DatabaseConnection.getConnection()) {
             String sql =
-                    "SELECT id, judul, deskripsi, deadline, prioritas, mata_kuliah, tipe " +
-                            "FROM tugas";
+                "SELECT id, judul, deskripsi, deadline, prioritas, mata_kuliah, tipe " +
+                "FROM tugas";
             PreparedStatement st = conn.prepareStatement(sql);
             ResultSet rs = st.executeQuery();
             while (rs.next()) {
                 Tugas tugas = new Tugas(
-                        rs.getInt("id"),
-                        rs.getString("judul"),
-                        rs.getString("deskripsi"),
-                        rs.getString("deadline") != null ? rs.getString("deadline").substring(0, 10) : "",
-                        rs.getString("prioritas"),
-                        rs.getString("mata_kuliah"),
-                        rs.getString("tipe")
+                    rs.getInt("id"),
+                    rs.getString("judul"),
+                    rs.getString("deskripsi"),
+                    rs.getString("deadline") != null ? rs.getString("deadline").substring(0, 10) : "",
+                    rs.getString("prioritas"),
+                    rs.getString("mata_kuliah"),
+                    rs.getString("tipe")
                 );
                 tugasList.add(tugas);
             }
@@ -162,47 +161,14 @@ public class DashboardController {
 
     private void filterTugas() {
         String searchText = searchField.getText() == null ? "" : searchField.getText().toLowerCase().trim();
-        String filterStatus = comboFilter.getValue();
-
         filteredTugas.setPredicate(tugas -> {
             boolean matchesSearch = searchText.isEmpty() ||
                     tugas.getJudul().toLowerCase().contains(searchText) ||
                     tugas.getMataKuliah().toLowerCase().contains(searchText) ||
                     tugas.getPrioritas().toLowerCase().contains(searchText);
 
-            if (!matchesSearch) return false;
-            if (filterStatus == null || filterStatus.equals("Semua")) return true;
-
-            switch (filterStatus) {
-                case "Mendesak":
-                    return isMendesak(tugas);
-                case "Sedang Dikerjakan":
-                    return isSedangDikerjakan(tugas);
-                case "Selesai":
-                    return isSelesai(tugas);
-                default:
-                    return true;
-            }
+            return matchesSearch;
         });
-    }
-
-    private boolean isMendesak(Tugas tugas) {
-        try {
-            LocalDate today = LocalDate.now();
-            LocalDate deadline = LocalDate.parse(tugas.getDeadline());
-            long daysDiff = ChronoUnit.DAYS.between(today, deadline);
-            return daysDiff >= 0 && daysDiff <= 3 && !isSelesai(tugas);
-        } catch (Exception e) {
-            return false;
-        }
-    }
-
-    private boolean isSedangDikerjakan(Tugas tugas) {
-        return "Sedang Dikerjakan".equals(tugas.getStatus());
-    }
-
-    private boolean isSelesai(Tugas tugas) {
-        return "Selesai".equals(tugas.getStatus());
     }
 
     private void setupAksiColumn() {
@@ -257,6 +223,7 @@ public class DashboardController {
         confirmDialog.setTitle("Konfirmasi Hapus");
         confirmDialog.setHeaderText("Hapus Tugas");
         confirmDialog.setContentText("Apakah Anda yakin ingin menghapus tugas \"" + tugas.getJudul() + "\"?");
+
         Optional<ButtonType> result = confirmDialog.showAndWait();
         if (result.isPresent() && result.get() == ButtonType.OK) {
             tugasList.remove(tugas);
@@ -277,8 +244,7 @@ public class DashboardController {
                 } else if (daysDiff < 0) {
                     showAlert("Tugas Terlambat", "Tugas \"" + tugas.getJudul() + "\" sudah melewati deadline sejak " + (-daysDiff) + " hari yang lalu!", Alert.AlertType.ERROR);
                 }
-            } catch (Exception ignored) {
-            }
+            } catch (Exception ignored) { }
         }
     }
 
@@ -288,11 +254,5 @@ public class DashboardController {
         alert.setHeaderText(null);
         alert.setContentText(msg);
         alert.showAndWait();
-    }
-
-    // ===== Tambahkan method ini agar onAction di FXML tidak error =====
-    @FXML
-    private void handleAddNewTask() {
-        tambahTugas();
     }
 }
