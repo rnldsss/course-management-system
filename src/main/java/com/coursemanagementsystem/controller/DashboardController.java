@@ -1,200 +1,71 @@
 package com.coursemanagementsystem.controller;
 
-import javafx.fxml.FXML;
-import javafx.scene.control.*;
-import javafx.scene.control.cell.PropertyValueFactory;
-import javafx.collections.*;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.collections.transformation.FilteredList;
-import javafx.stage.FileChooser;
+import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Scene;
+import javafx.scene.control.*;
 import javafx.stage.Stage;
 import javafx.scene.layout.HBox;
-import javafx.scene.layout.VBox;
-import javafx.scene.Scene;
-import javafx.fxml.FXMLLoader;
 
-import java.io.File;
+import com.coursemanagementsystem.model.Tugas;
+import com.coursemanagementsystem.database.DatabaseConnection;
+
 import java.sql.*;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
-import java.util.Optional;
-
-import com.coursemanagementsystem.model.*;
-import com.coursemanagementsystem.database.DatabaseConnection;
 
 public class DashboardController {
-    @FXML
-    private TableView<Tugas> tableTugas;
-    @FXML
-    private TableColumn<Tugas, String> colNama, colDeadline, colPrioritas, colMataKuliah, colTipe;
-    @FXML
-    private TableColumn<Tugas, Void> colAksi;
-    @FXML
-    private TableColumn<Tugas, Void> colStatus;
-    @FXML
-    private Button btnTambah;
-    // ComboBox filter DINONAKTIFKAN jika tidak ada di FXML
-    // @FXML private ComboBox<String> comboFilter;
+
     @FXML private TextField searchField;
+    @FXML private ComboBox<String> filterStatus;
+    @FXML private TableView<Tugas> taskTable;
+    @FXML private TableColumn<Tugas, String> titleColumn;
+    @FXML private TableColumn<Tugas, String> deadlineColumn;
+    @FXML private TableColumn<Tugas, String> priorityColumn;
+    @FXML private TableColumn<Tugas, String> subjectColumn;
+    @FXML private TableColumn<Tugas, String> typeColumn;
+    @FXML private TableColumn<Tugas, String> statusColumn;
+    @FXML private TableColumn<Tugas, Void> actionColumn;
+
+    @FXML private Label urgentCount;
+    @FXML private Label inProgressCount;
+    @FXML private Label completedCount;
 
     private ObservableList<Tugas> tugasList = FXCollections.observableArrayList();
     private FilteredList<Tugas> filteredTugas;
 
     @FXML
     public void initialize() {
-        // KOMEN/REMOVE: comboFilter.getItems().addAll("Semua", "Mendesak", "Sedang Dikerjakan", "Selesai");
-        // KOMEN/REMOVE: comboFilter.getSelectionModel().selectFirst();
+        // Set up TableView columns
+        titleColumn.setCellValueFactory(cellData -> cellData.getValue().judulProperty());
+        deadlineColumn.setCellValueFactory(cellData -> cellData.getValue().deadlineProperty());
+        priorityColumn.setCellValueFactory(cellData -> cellData.getValue().prioritasProperty());
+        subjectColumn.setCellValueFactory(cellData -> cellData.getValue().mataKuliahProperty());
+        typeColumn.setCellValueFactory(cellData -> cellData.getValue().tipeProperty());
+        statusColumn.setCellValueFactory(cellData -> cellData.getValue().statusProperty());
 
-        colNama.setCellValueFactory(new PropertyValueFactory<>("judul"));
-        colDeadline.setCellValueFactory(new PropertyValueFactory<>("deadline"));
-        colPrioritas.setCellValueFactory(new PropertyValueFactory<>("prioritas"));
-        colMataKuliah.setCellValueFactory(new PropertyValueFactory<>("mataKuliah"));
-        colTipe.setCellValueFactory(new PropertyValueFactory<>("tipe"));
+        setupActionColumn();
 
-        colStatus.setCellFactory(param -> new TableCell<Tugas, Void>() {
-            private final CheckBox checkBox = new CheckBox();
-            private final Button uploadBtn = new Button();
-            private final Label lblStatus = new Label();
-            private final Label lblUploadDone = new Label("Selesai diupload");
-            private final HBox barisAtas = new HBox(16, checkBox, uploadBtn);
-            private final VBox vbox = new VBox(8, barisAtas, lblStatus);
-
-            {
-                barisAtas.setAlignment(javafx.geometry.Pos.CENTER_LEFT);
-                vbox.setAlignment(javafx.geometry.Pos.CENTER_LEFT);
-                vbox.setPadding(new javafx.geometry.Insets(4, 0, 4, 0));
-
-                checkBox.setOnAction(event -> {
-                    Tugas tugas = getTableView().getItems().get(getIndex());
-                    if (checkBox.isSelected()) {
-                        tugas.setStatus("Sedang Dikerjakan");
-                        lblStatus.setText("Sedang Dikerjakan");
-                    } else {
-                        tugas.setStatus("Belum Dikerjakan");
-                        lblStatus.setText("Belum Dikerjakan");
-                    }
-                });
-
-                uploadBtn.setOnAction(event -> {
-                    FileChooser fileChooser = new FileChooser();
-                    fileChooser.setTitle("Upload Tugas");
-                    Stage stage = (Stage) getTableView().getScene().getWindow();
-                    File file = fileChooser.showOpenDialog(stage);
-                    if (file != null) {
-                        Tugas tugas = getTableView().getItems().get(getIndex());
-                        tugas.setUploadPath(file.getAbsolutePath());
-                        getTableView().refresh();
-                    }
-                });
-
-                checkBox.getStyleClass().add("custom-checkbox");
-                uploadBtn.getStyleClass().add("upload-btn");
-                lblStatus.getStyleClass().add("status-label");
-                lblUploadDone.setStyle("-fx-text-fill: #16a34a; -fx-font-size: 11px;");
-            }
-
-            @Override
-            protected void updateItem(Void item, boolean empty) {
-                super.updateItem(item, empty);
-                if (empty) {
-                    setGraphic(null);
-                } else {
-                    Tugas tugas = getTableView().getItems().get(getIndex());
-                    boolean sedangDikerjakan = "Sedang Dikerjakan".equals(tugas.getStatus());
-                    checkBox.setSelected(sedangDikerjakan);
-                    lblStatus.setText(sedangDikerjakan ? "Sedang Dikerjakan" : "Belum Dikerjakan");
-
-                    if (tugas.getUploadPath() != null && !tugas.getUploadPath().isEmpty()) {
-                        uploadBtn.setText("Selesai");
-                        uploadBtn.setDisable(true);
-                        if (!vbox.getChildren().contains(lblUploadDone)) {
-                            vbox.getChildren().add(lblUploadDone);
-                        }
-                    } else {
-                        uploadBtn.setText("Upload Tugas");
-                        uploadBtn.setDisable(false);
-                        vbox.getChildren().remove(lblUploadDone);
-                    }
-                    setGraphic(vbox);
-                }
-            }
-        });
-
-        setupAksiColumn();
+        // Filter ComboBox setup
+        filterStatus.setItems(FXCollections.observableArrayList("Semua", "Belum Dikerjakan", "Sedang Dikerjakan", "Selesai"));
+        filterStatus.getSelectionModel().selectFirst();
+        filterStatus.valueProperty().addListener((obs, oldVal, newVal) -> filterTugas());
+        searchField.textProperty().addListener((obs, oldVal, newVal) -> filterTugas());
 
         filteredTugas = new FilteredList<>(tugasList, p -> true);
-        tableTugas.setItems(filteredTugas);
-
-        searchField.textProperty().addListener((obs, oldVal, newVal) -> filterTugas());
-        // KOMEN/REMOVE: comboFilter.valueProperty().addListener((obs, oldVal, newVal) -> filterTugas());
-
-        btnTambah.setOnAction(e -> tambahTugas());
+        taskTable.setItems(filteredTugas);
 
         loadTugasFromDatabase();
-        cekNotifikasiDeadline();
+        updateSummaryCards();
     }
 
-    private void loadTugasFromDatabase() {
-        tugasList.clear();
-        try (Connection conn = DatabaseConnection.getConnection()) {
-            String sql =
-                "SELECT id, judul, deskripsi, deadline, prioritas, mata_kuliah, tipe " +
-                "FROM tugas";
-            PreparedStatement st = conn.prepareStatement(sql);
-            ResultSet rs = st.executeQuery();
-            while (rs.next()) {
-                Tugas tugas = new Tugas(
-                    rs.getInt("id"),
-                    rs.getString("judul"),
-                    rs.getString("deskripsi"),
-                    rs.getString("deadline") != null ? rs.getString("deadline").substring(0, 10) : "",
-                    rs.getString("prioritas"),
-                    rs.getString("mata_kuliah"),
-                    rs.getString("tipe")
-                );
-                tugasList.add(tugas);
-            }
-        } catch (SQLException e) {
-            showAlert("Database Error", "Gagal mengambil data tugas: " + e.getMessage(), Alert.AlertType.ERROR);
-        }
-    }
-
-    private void filterTugas() {
-        String searchText = searchField.getText() == null ? "" : searchField.getText().toLowerCase().trim();
-        filteredTugas.setPredicate(tugas -> {
-            boolean matchesSearch = searchText.isEmpty() ||
-                    tugas.getJudul().toLowerCase().contains(searchText) ||
-                    tugas.getMataKuliah().toLowerCase().contains(searchText) ||
-                    tugas.getPrioritas().toLowerCase().contains(searchText);
-
-            return matchesSearch;
-        });
-    }
-
-    private void setupAksiColumn() {
-        colAksi.setCellFactory(param -> new TableCell<Tugas, Void>() {
-            private final Button btnEdit = new Button("Edit");
-            private final Button btnHapus = new Button("Hapus");
-            private final HBox pane = new HBox(5, btnEdit, btnHapus);
-
-            {
-                btnEdit.setOnAction((event) -> {
-                    Tugas tugas = getTableView().getItems().get(getIndex());
-                    editTugas(tugas);
-                });
-
-                btnHapus.setOnAction((event) -> {
-                    Tugas tugas = getTableView().getItems().get(getIndex());
-                    hapusTugas(tugas);
-                });
-            }
-
-            @Override
-            protected void updateItem(Void item, boolean empty) {
-                super.updateItem(item, empty);
-                setGraphic(empty ? null : pane);
-            }
-        });
+    @FXML
+    private void handleAddNewTask() {
+        tambahTugas();
     }
 
     private void tambahTugas() {
@@ -206,7 +77,10 @@ public class DashboardController {
             stage.initModality(javafx.stage.Modality.APPLICATION_MODAL);
 
             TambahTugasController controller = loader.getController();
-            controller.setOnTugasAdded(() -> loadTugasFromDatabase());
+            controller.setOnTugasAdded(() -> {
+                loadTugasFromDatabase();
+                updateSummaryCards();
+            });
 
             stage.showAndWait();
         } catch (Exception e) {
@@ -214,23 +88,92 @@ public class DashboardController {
         }
     }
 
-    private void editTugas(Tugas tugas) {
-        showAlert("Info", "Fitur edit tugas belum diimplementasikan.", Alert.AlertType.INFORMATION);
+    private void loadTugasFromDatabase() {
+        tugasList.clear();
+        try (Connection conn = DatabaseConnection.getConnection()) {
+            String sql = "SELECT id, judul, deskripsi, deadline, prioritas, mata_kuliah, tipe, status FROM tugas";
+            PreparedStatement st = conn.prepareStatement(sql);
+            ResultSet rs = st.executeQuery();
+            while (rs.next()) {
+                Tugas tugas = new Tugas(
+                        rs.getInt("id"),
+                        rs.getString("judul"),
+                        rs.getString("deskripsi"),
+                        rs.getString("deadline"),
+                        rs.getString("prioritas"),
+                        rs.getString("mata_kuliah"),
+                        rs.getString("tipe"),
+                        rs.getString("status") == null ? "Belum Dikerjakan" : rs.getString("status")
+                );
+                tugasList.add(tugas);
+            }
+        } catch (SQLException e) {
+            showAlert("Database Error", "Gagal mengambil data tugas: " + e.getMessage(), Alert.AlertType.ERROR);
+        }
+        filterTugas();
+        updateSummaryCards();
+    }
+
+    private void filterTugas() {
+        String search = searchField.getText() == null ? "" : searchField.getText().toLowerCase();
+        String selectedStatus = filterStatus.getValue();
+        filteredTugas.setPredicate(tugas -> {
+            boolean matchesStatus = selectedStatus == null || selectedStatus.equals("Semua") || tugas.getStatus().equals(selectedStatus);
+            boolean matchesSearch = search.isEmpty()
+                    || tugas.getJudul().toLowerCase().contains(search)
+                    || tugas.getMataKuliah().toLowerCase().contains(search)
+                    || tugas.getPrioritas().toLowerCase().contains(search);
+            return matchesStatus && matchesSearch;
+        });
+    }
+
+    private void setupActionColumn() {
+        actionColumn.setCellFactory(param -> new TableCell<>() {
+            private final Button btnEdit = new Button("Edit");
+            private final Button btnHapus = new Button("Hapus");
+            private final HBox hbox = new HBox(8, btnEdit, btnHapus);
+
+            {
+                btnEdit.setOnAction(e -> {
+                    Tugas tugas = getTableView().getItems().get(getIndex());
+                    showAlert("Info", "Fitur edit belum tersedia.", Alert.AlertType.INFORMATION);
+                });
+                btnHapus.setOnAction(e -> {
+                    Tugas tugas = getTableView().getItems().get(getIndex());
+                    Alert confirmDialog = new Alert(Alert.AlertType.CONFIRMATION);
+                    confirmDialog.setTitle("Konfirmasi Hapus");
+                    confirmDialog.setHeaderText("Hapus Tugas");
+                    confirmDialog.setContentText("Apakah Anda yakin ingin menghapus tugas \"" + tugas.getJudul() + "\"?");
+                    confirmDialog.showAndWait().ifPresent(result -> {
+                        if (result == ButtonType.OK) {
+                            hapusTugas(tugas);
+                        }
+                    });
+                });
+            }
+            @Override
+            protected void updateItem(Void item, boolean empty) {
+                super.updateItem(item, empty);
+                setGraphic(empty ? null : hbox);
+            }
+        });
     }
 
     private void hapusTugas(Tugas tugas) {
-        Alert confirmDialog = new Alert(Alert.AlertType.CONFIRMATION);
-        confirmDialog.setTitle("Konfirmasi Hapus");
-        confirmDialog.setHeaderText("Hapus Tugas");
-        confirmDialog.setContentText("Apakah Anda yakin ingin menghapus tugas \"" + tugas.getJudul() + "\"?");
-
-        Optional<ButtonType> result = confirmDialog.showAndWait();
-        if (result.isPresent() && result.get() == ButtonType.OK) {
+        try (Connection conn = DatabaseConnection.getConnection()) {
+            String sql = "DELETE FROM tugas WHERE id = ?";
+            PreparedStatement st = conn.prepareStatement(sql);
+            st.setInt(1, tugas.getId());
+            st.executeUpdate();
             tugasList.remove(tugas);
+            updateSummaryCards();
+        } catch (SQLException e) {
+            showAlert("Database Error", "Gagal menghapus tugas: " + e.getMessage(), Alert.AlertType.ERROR);
         }
     }
 
-    private void cekNotifikasiDeadline() {
+    private void updateSummaryCards() {
+        int urgent = 0, inProgress = 0, completed = 0;
         LocalDate today = LocalDate.now();
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
@@ -238,14 +181,19 @@ public class DashboardController {
             try {
                 LocalDate deadline = LocalDate.parse(tugas.getDeadline(), formatter);
                 long daysDiff = ChronoUnit.DAYS.between(today, deadline);
-
-                if (daysDiff <= 3 && daysDiff >= 0) {
-                    showAlert("Pengingat Tugas", "Tugas \"" + tugas.getJudul() + "\" akan berakhir dalam " + daysDiff + " hari lagi!", Alert.AlertType.WARNING);
-                } else if (daysDiff < 0) {
-                    showAlert("Tugas Terlambat", "Tugas \"" + tugas.getJudul() + "\" sudah melewati deadline sejak " + (-daysDiff) + " hari yang lalu!", Alert.AlertType.ERROR);
+                if (daysDiff <= 3 && daysDiff >= 0 && !"Selesai".equalsIgnoreCase(tugas.getStatus())) {
+                    urgent++;
                 }
-            } catch (Exception ignored) { }
+            } catch (Exception ignored) {}
+            if ("Sedang Dikerjakan".equalsIgnoreCase(tugas.getStatus())) {
+                inProgress++;
+            } else if ("Selesai".equalsIgnoreCase(tugas.getStatus())) {
+                completed++;
+            }
         }
+        urgentCount.setText(String.valueOf(urgent));
+        inProgressCount.setText(String.valueOf(inProgress));
+        completedCount.setText(String.valueOf(completed));
     }
 
     private void showAlert(String title, String msg, Alert.AlertType type) {
