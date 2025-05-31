@@ -24,7 +24,7 @@ public class Tugas {
         this.uploadPath = "";
     }
 
-    // Constructor tambahan (untuk subclass)
+    // Constructor tambahan (untuk subclass, tidak dipakai jika tidak perlu)
     public Tugas(String judul, String deadline, String prioritas, String mataKuliah) {
         this(0, judul, "", deadline, prioritas, mataKuliah, "");
     }
@@ -43,7 +43,7 @@ public class Tugas {
     public String getTipe() { return tipe; }
     public String getStatus() { return status; }
     public String getUploadPath() { return uploadPath; }
-    
+
     public void setStatus(String status) { this.status = status; }
     public void setUploadPath(String uploadPath) { this.uploadPath = uploadPath; }
 
@@ -54,9 +54,12 @@ public class Tugas {
     public Tugas(int id, String judul, String deadline, String prioritas, String mataKuliah, String tipe) {
         this.id = id;
         this.judul = judul;
+        this.deskripsi = "";
         this.deadline = deadline;
         this.prioritas = prioritas;
         this.mataKuliah = mataKuliah;
         this.tipe = tipe;
+        this.status = "Belum Dikerjakan";
+        this.uploadPath = "";
     }
 }

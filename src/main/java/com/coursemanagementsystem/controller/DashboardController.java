@@ -137,7 +137,7 @@ public class DashboardController {
         tugasList.clear();
         try (Connection conn = DatabaseConnection.getConnection()) {
             String sql =
-                "SELECT id, judul, deadline, prioritas, mata_kuliah, tipe, status, upload_path " +
+                "SELECT id, judul, deskripsi, deadline, prioritas, mata_kuliah, tipe " +
                 "FROM tugas";
             PreparedStatement st = conn.prepareStatement(sql);
             ResultSet rs = st.executeQuery();
@@ -145,13 +145,12 @@ public class DashboardController {
                 Tugas tugas = new Tugas(
                     rs.getInt("id"),
                     rs.getString("judul"),
+                    rs.getString("deskripsi"),
                     rs.getString("deadline") != null ? rs.getString("deadline").substring(0, 10) : "",
                     rs.getString("prioritas"),
                     rs.getString("mata_kuliah"),
                     rs.getString("tipe")
                 );
-                tugas.setStatus(rs.getString("status") == null ? "Belum Dikerjakan" : rs.getString("status"));
-                tugas.setUploadPath(rs.getString("upload_path") == null ? "" : rs.getString("upload_path"));
                 tugasList.add(tugas);
             }
         } catch (SQLException e) {

@@ -12,9 +12,7 @@ public class MainApp extends Application {
     public void start(Stage primaryStage) throws Exception {
         Parent root = FXMLLoader.load(getClass().getResource("/com/coursemanagementsystem/dashboard.fxml"));
         Scene scene = new Scene(root);
-        // CSS dashboard tetap
         scene.getStylesheets().add(getClass().getResource("/com/coursemanagementsystem/tailwindfx.css").toExternalForm());
-
         primaryStage.setTitle("Sistem Manajemen Tugas Mahasiswa");
         primaryStage.setScene(scene);
         primaryStage.show();
