@@ -7,30 +7,15 @@ import javafx.scene.Scene;
 import javafx.stage.Stage;
 
 public class MainApp extends Application {
-    private static Stage primaryStage;
 
     @Override
-    public void start(Stage stage) throws Exception {
-        primaryStage = stage;
-        showLoginScreen();
-    }
-
-    public static void showLoginScreen() throws Exception {
-        FXMLLoader loader = new FXMLLoader(MainApp.class.getResource("/com/coursemanagementsystem/login.fxml"));
-        Parent root = loader.load();
+    public void start(Stage primaryStage) throws Exception {
+        Parent root = FXMLLoader.load(getClass().getResource("/com/coursemanagementsystem/dashboard.fxml"));
         Scene scene = new Scene(root);
-        scene.getStylesheets().add(MainApp.class.getResource("/com/coursemanagementsystem/tailwindfx.css").toExternalForm());
-        primaryStage.setTitle("Login");
-        primaryStage.setScene(scene);
-        primaryStage.show();
-    }
+        // CSS dashboard tetap
+        scene.getStylesheets().add(getClass().getResource("/com/coursemanagementsystem/tailwindfx.css").toExternalForm());
 
-    public static void showDashboard() throws Exception {
-        FXMLLoader loader = new FXMLLoader(MainApp.class.getResource("/com/coursemanagementsystem/dashboard.fxml"));
-        Parent root = loader.load();
-        Scene scene = new Scene(root);
-        scene.getStylesheets().add(MainApp.class.getResource("/com/coursemanagementsystem/tailwindfx.css").toExternalForm());
-        primaryStage.setTitle("Dashboard");
+        primaryStage.setTitle("Sistem Manajemen Tugas Mahasiswa");
         primaryStage.setScene(scene);
         primaryStage.show();
     }
