@@ -1,6 +1,8 @@
 package com.coursemanagementsystem.controller;
 
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.collections.*;
@@ -226,8 +228,21 @@ public class DashboardController {
     }
 
     private void tambahTugas() {
-        showAlert("Info", "Fitur tambah tugas belum diimplementasikan.", Alert.AlertType.INFORMATION);
+    try {
+        FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/coursemanagementsystem/tambah_tugas.fxml"));
+        Stage stage = new Stage();
+        stage.setTitle("Tambah Tugas");
+        stage.setScene(new Scene(loader.load()));
+        stage.initModality(javafx.stage.Modality.APPLICATION_MODAL);
+
+        TambahTugasController controller = loader.getController();
+        controller.setOnTugasAdded(() -> loadTugasFromDatabase());
+
+        stage.showAndWait();
+    } catch (Exception e) {
+        showAlert("Error", "Gagal membuka form tambah tugas: " + e.getMessage(), Alert.AlertType.ERROR);
     }
+}
 
     private void editTugas(Tugas tugas) {
         showAlert("Info", "Fitur edit tugas belum diimplementasikan.", Alert.AlertType.INFORMATION);
