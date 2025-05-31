@@ -43,8 +43,8 @@ public class DashboardController {
 
     @FXML
     public void initialize() {
-        comboFilter.getItems().addAll("Semua", "Mendesak", "Sedang Dikerjakan", "Selesai");
-        comboFilter.getSelectionModel().selectFirst();
+        comboFilter.getItems().setAll("Semua", "Mendesak", "Sedang Dikerjakan", "Selesai");
+        comboFilter.getSelectionModel().select(0);
 
         colNama.setCellValueFactory(new PropertyValueFactory<>("judul"));
         colDeadline.setCellValueFactory(new PropertyValueFactory<>("deadline"));
@@ -55,24 +55,27 @@ public class DashboardController {
         colStatus.setCellFactory(param -> new TableCell<Tugas, Void>() {
             private final CheckBox checkBox = new CheckBox();
             private final Button uploadBtn = new Button();
-            private final Label lblStatus = new Label();
-            private final Label lblUploadDone = new Label("Selesai diupload");
-            private final HBox barisAtas = new HBox(16, checkBox, uploadBtn);
-            private final VBox vbox = new VBox(8, barisAtas, lblStatus);
+            private final Label statusLabel = new Label();
+            private final Label uploadDone = new Label("Selesai diupload");
+            private final HBox topRow = new HBox(16, checkBox, uploadBtn);
+            private final VBox box = new VBox(8, topRow, statusLabel);
 
             {
-                barisAtas.setAlignment(javafx.geometry.Pos.CENTER_LEFT);
-                vbox.setAlignment(javafx.geometry.Pos.CENTER_LEFT);
-                vbox.setPadding(new javafx.geometry.Insets(4, 0, 4, 0));
+                topRow.setAlignment(javafx.geometry.Pos.CENTER_LEFT);
+                box.setAlignment(javafx.geometry.Pos.CENTER_LEFT);
+                box.setPadding(new javafx.geometry.Insets(4, 0, 4, 0));
 
                 checkBox.setOnAction(event -> {
-                    Tugas tugas = getTableView().getItems().get(getIndex());
-                    if (checkBox.isSelected()) {
-                        tugas.setStatus("Sedang Dikerjakan");
-                        lblStatus.setText("Sedang Dikerjakan");
-                    } else {
-                        tugas.setStatus("Belum Dikerjakan");
-                        lblStatus.setText("Belum Dikerjakan");
+                    int idx = getIndex();
+                    if (idx >= 0 && idx < getTableView().getItems().size()) {
+                        Tugas t = getTableView().getItems().get(idx);
+                        if (checkBox.isSelected()) {
+                            t.setStatus("Sedang Dikerjakan");
+                            statusLabel.setText("Sedang Dikerjakan");
+                        } else {
+                            t.setStatus("Belum Dikerjakan");
+                            statusLabel.setText("Belum Dikerjakan");
+                        }
                     }
                 });
 
@@ -82,16 +85,19 @@ public class DashboardController {
                     Stage stage = (Stage) getTableView().getScene().getWindow();
                     File file = fileChooser.showOpenDialog(stage);
                     if (file != null) {
-                        Tugas tugas = getTableView().getItems().get(getIndex());
-                        tugas.setUploadPath(file.getAbsolutePath());
-                        getTableView().refresh();
+                        int idx = getIndex();
+                        if (idx >= 0 && idx < getTableView().getItems().size()) {
+                            Tugas t = getTableView().getItems().get(idx);
+                            t.setUploadPath(file.getAbsolutePath());
+                            getTableView().refresh();
+                        }
                     }
                 });
 
                 checkBox.getStyleClass().add("custom-checkbox");
                 uploadBtn.getStyleClass().add("upload-btn");
-                lblStatus.getStyleClass().add("status-label");
-                lblUploadDone.setStyle("-fx-text-fill: #16a34a; -fx-font-size: 11px;");
+                statusLabel.getStyleClass().add("status-label");
+                uploadDone.setStyle("-fx-text-fill: #16a34a; -fx-font-size: 11px;");
             }
 
             @Override
@@ -100,29 +106,31 @@ public class DashboardController {
                 if (empty) {
                     setGraphic(null);
                 } else {
-                    Tugas tugas = getTableView().getItems().get(getIndex());
-                    boolean sedangDikerjakan = "Sedang Dikerjakan".equals(tugas.getStatus());
-                    checkBox.setSelected(sedangDikerjakan);
-                    lblStatus.setText(sedangDikerjakan ? "Sedang Dikerjakan" : "Belum Dikerjakan");
+                    int idx = getIndex();
+                    if (idx < 0 || idx >= getTableView().getItems().size()) {
+                        setGraphic(null);
+                        return;
+                    }
+                    Tugas t = getTableView().getItems().get(idx);
+                    boolean sedang = "Sedang Dikerjakan".equals(t.getStatus());
+                    checkBox.setSelected(sedang);
+                    statusLabel.setText(sedang ? "Sedang Dikerjakan" : "Belum Dikerjakan");
 
-                    if (tugas.getUploadPath() != null && !tugas.getUploadPath().isEmpty()) {
+                    if (t.getUploadPath() != null && !t.getUploadPath().isEmpty()) {
                         uploadBtn.setText("Selesai");
                         uploadBtn.setDisable(true);
-                        if (!vbox.getChildren().contains(lblUploadDone)) {
-                            vbox.getChildren().add(lblUploadDone);
-                        }
+                        if (!box.getChildren().contains(uploadDone)) box.getChildren().add(uploadDone);
                     } else {
                         uploadBtn.setText("Upload Tugas");
                         uploadBtn.setDisable(false);
-                        vbox.getChildren().remove(lblUploadDone);
+                        box.getChildren().remove(uploadDone);
                     }
-                    setGraphic(vbox);
+                    setGraphic(box);
                 }
             }
         });
 
         setupAksiColumn();
-
         filteredTugas = new FilteredList<>(tugasList, p -> true);
         tableTugas.setItems(filteredTugas);
 
@@ -138,22 +146,20 @@ public class DashboardController {
     private void loadTugasFromDatabase() {
         tugasList.clear();
         try (Connection conn = DatabaseConnection.getConnection()) {
-            String sql =
-                "SELECT id, judul, deskripsi, deadline, prioritas, mata_kuliah, tipe " +
-                "FROM tugas";
+            String sql = "SELECT id, judul, deskripsi, deadline, prioritas, mata_kuliah, tipe FROM tugas";
             PreparedStatement st = conn.prepareStatement(sql);
             ResultSet rs = st.executeQuery();
             while (rs.next()) {
-                Tugas tugas = new Tugas(
-                    rs.getInt("id"),
-                    rs.getString("judul"),
-                    rs.getString("deskripsi"),
-                    rs.getString("deadline") != null ? rs.getString("deadline").substring(0, 10) : "",
-                    rs.getString("prioritas"),
-                    rs.getString("mata_kuliah"),
-                    rs.getString("tipe")
+                Tugas t = new Tugas(
+                        rs.getInt("id"),
+                        rs.getString("judul"),
+                        rs.getString("deskripsi"),
+                        rs.getString("deadline") != null ? rs.getString("deadline").substring(0, 10) : "",
+                        rs.getString("prioritas"),
+                        rs.getString("mata_kuliah"),
+                        rs.getString("tipe")
                 );
-                tugasList.add(tugas);
+                tugasList.add(t);
             }
         } catch (SQLException e) {
             showAlert("Database Error", "Gagal mengambil data tugas: " + e.getMessage(), Alert.AlertType.ERROR);
@@ -164,41 +170,39 @@ public class DashboardController {
         String searchText = searchField.getText() == null ? "" : searchField.getText().toLowerCase().trim();
         String filterStatus = comboFilter.getValue();
 
-        filteredTugas.setPredicate(tugas -> {
-            boolean matchesSearch = searchText.isEmpty() ||
-                    tugas.getJudul().toLowerCase().contains(searchText) ||
-                    tugas.getMataKuliah().toLowerCase().contains(searchText) ||
-                    tugas.getPrioritas().toLowerCase().contains(searchText);
-
-            if (!matchesSearch) return false;
+        filteredTugas.setPredicate(t -> {
+            boolean matchSearch = searchText.isEmpty() ||
+                    t.getJudul().toLowerCase().contains(searchText) ||
+                    t.getMataKuliah().toLowerCase().contains(searchText) ||
+                    t.getPrioritas().toLowerCase().contains(searchText);
+            if (!matchSearch) return false;
             if (filterStatus == null || filterStatus.equals("Semua")) return true;
-
             switch (filterStatus) {
-                case "Mendesak": return isMendesak(tugas);
-                case "Sedang Dikerjakan": return isSedangDikerjakan(tugas);
-                case "Selesai": return isSelesai(tugas);
+                case "Mendesak": return isMendesak(t);
+                case "Sedang Dikerjakan": return isSedangDikerjakan(t);
+                case "Selesai": return isSelesai(t);
                 default: return true;
             }
         });
     }
 
-    private boolean isMendesak(Tugas tugas) {
+    private boolean isMendesak(Tugas t) {
         try {
-            LocalDate today = LocalDate.now();
-            LocalDate deadline = LocalDate.parse(tugas.getDeadline());
-            long daysDiff = ChronoUnit.DAYS.between(today, deadline);
-            return daysDiff >= 0 && daysDiff <= 3 && !isSelesai(tugas);
+            LocalDate now = LocalDate.now();
+            LocalDate deadline = LocalDate.parse(t.getDeadline());
+            long sisa = ChronoUnit.DAYS.between(now, deadline);
+            return sisa >= 0 && sisa <= 3 && !isSelesai(t);
         } catch (Exception e) {
             return false;
         }
     }
 
-    private boolean isSedangDikerjakan(Tugas tugas) {
-        return "Sedang Dikerjakan".equals(tugas.getStatus());
+    private boolean isSedangDikerjakan(Tugas t) {
+        return "Sedang Dikerjakan".equals(t.getStatus());
     }
 
-    private boolean isSelesai(Tugas tugas) {
-        return "Selesai".equals(tugas.getStatus());
+    private boolean isSelesai(Tugas t) {
+        return "Selesai".equals(t.getStatus());
     }
 
     private void setupAksiColumn() {
@@ -209,13 +213,19 @@ public class DashboardController {
 
             {
                 btnEdit.setOnAction((event) -> {
-                    Tugas tugas = getTableView().getItems().get(getIndex());
-                    editTugas(tugas);
+                    int idx = getIndex();
+                    if (idx >= 0 && idx < getTableView().getItems().size()) {
+                        Tugas t = getTableView().getItems().get(idx);
+                        editTugas(t);
+                    }
                 });
 
                 btnHapus.setOnAction((event) -> {
-                    Tugas tugas = getTableView().getItems().get(getIndex());
-                    hapusTugas(tugas);
+                    int idx = getIndex();
+                    if (idx >= 0 && idx < getTableView().getItems().size()) {
+                        Tugas t = getTableView().getItems().get(idx);
+                        hapusTugas(t);
+                    }
                 });
             }
 
@@ -228,35 +238,34 @@ public class DashboardController {
     }
 
     private void tambahTugas() {
-    try {
-        FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/coursemanagementsystem/tambah_tugas.fxml"));
-        Stage stage = new Stage();
-        stage.setTitle("Tambah Tugas");
-        stage.setScene(new Scene(loader.load()));
-        stage.initModality(javafx.stage.Modality.APPLICATION_MODAL);
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/coursemanagementsystem/tambah_tugas.fxml"));
+            Stage stage = new Stage();
+            stage.setTitle("Tambah Tugas");
+            stage.setScene(new Scene(loader.load()));
+            stage.initModality(javafx.stage.Modality.APPLICATION_MODAL);
 
-        TambahTugasController controller = loader.getController();
-        controller.setOnTugasAdded(() -> loadTugasFromDatabase());
+            TambahTugasController controller = loader.getController();
+            controller.setOnTugasAdded(this::loadTugasFromDatabase);
 
-        stage.showAndWait();
-    } catch (Exception e) {
-        showAlert("Error", "Gagal membuka form tambah tugas: " + e.getMessage(), Alert.AlertType.ERROR);
+            stage.showAndWait();
+        } catch (Exception e) {
+            showAlert("Error", "Gagal membuka form tambah tugas: " + e.getMessage(), Alert.AlertType.ERROR);
+        }
     }
-}
 
-    private void editTugas(Tugas tugas) {
+    private void editTugas(Tugas t) {
         showAlert("Info", "Fitur edit tugas belum diimplementasikan.", Alert.AlertType.INFORMATION);
     }
 
-    private void hapusTugas(Tugas tugas) {
-        Alert confirmDialog = new Alert(Alert.AlertType.CONFIRMATION);
-        confirmDialog.setTitle("Konfirmasi Hapus");
-        confirmDialog.setHeaderText("Hapus Tugas");
-        confirmDialog.setContentText("Apakah Anda yakin ingin menghapus tugas \"" + tugas.getJudul() + "\"?");
-
-        Optional<ButtonType> result = confirmDialog.showAndWait();
+    private void hapusTugas(Tugas t) {
+        Alert confirm = new Alert(Alert.AlertType.CONFIRMATION);
+        confirm.setTitle("Konfirmasi Hapus");
+        confirm.setHeaderText("Hapus Tugas");
+        confirm.setContentText("Apakah Anda yakin ingin menghapus tugas \"" + t.getJudul() + "\"?");
+        Optional<ButtonType> result = confirm.showAndWait();
         if (result.isPresent() && result.get() == ButtonType.OK) {
-            tugasList.remove(tugas);
+            tugasList.remove(t);
         }
     }
 
@@ -264,15 +273,14 @@ public class DashboardController {
         LocalDate today = LocalDate.now();
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
-        for (Tugas tugas : tugasList) {
+        for (Tugas t : tugasList) {
             try {
-                LocalDate deadline = LocalDate.parse(tugas.getDeadline(), formatter);
-                long daysDiff = ChronoUnit.DAYS.between(today, deadline);
-
-                if (daysDiff <= 3 && daysDiff >= 0) {
-                    showAlert("Pengingat Tugas", "Tugas \"" + tugas.getJudul() + "\" akan berakhir dalam " + daysDiff + " hari lagi!", Alert.AlertType.WARNING);
-                } else if (daysDiff < 0) {
-                    showAlert("Tugas Terlambat", "Tugas \"" + tugas.getJudul() + "\" sudah melewati deadline sejak " + (-daysDiff) + " hari yang lalu!", Alert.AlertType.ERROR);
+                LocalDate deadline = LocalDate.parse(t.getDeadline(), formatter);
+                long diff = ChronoUnit.DAYS.between(today, deadline);
+                if (diff <= 3 && diff >= 0) {
+                    showAlert("Pengingat Tugas", "Tugas \"" + t.getJudul() + "\" akan berakhir dalam " + diff + " hari lagi!", Alert.AlertType.WARNING);
+                } else if (diff < 0) {
+                    showAlert("Tugas Terlambat", "Tugas \"" + t.getJudul() + "\" sudah melewati deadline sejak " + (-diff) + " hari yang lalu!", Alert.AlertType.ERROR);
                 }
             } catch (Exception ignored) { }
         }
