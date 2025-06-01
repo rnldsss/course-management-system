@@ -1,181 +1,50 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
 <?import javafx.scene.control.*?>
-<?import javafx.geometry.*?>
+<?import javafx.scene.layout.*?>
 
-<ScrollPane xmlns="http://javafx.com/javafx/11"
-           xmlns:fx="http://javafx.com/fxml/1"
-           fx:controller="com.coursemanagementsystem.controller.TambahTugasController"
-           fitToWidth="true"
-           hbarPolicy="NEVER"
-           vbarPolicy="AS_NEEDED"
-           style="-fx-background-color: #f8fafc;">
+<VBox xmlns="http://javafx.com/javafx/11.0.1" 
+      xmlns:fx="http://javafx.com/fxml/1" 
+      fx:controller="com.coursemanagementsystem.controller.TambahTugasController"
+      spacing="12.0">
+    
+    <padding>
+        <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
+    </padding>
 
-    <VBox spacing="24" 
-          styleClass="form-container"
-          prefWidth="600"
-          maxWidth="600">
-        <padding>
-            <Insets top="24" right="32" bottom="32" left="32" />
-        </padding>
+    <Label text="Form Tambah / Edit Tugas" style="-fx-font-size: 18px; -fx-font-weight: bold;" />
 
-        <!-- Header -->
-        <VBox spacing="12" alignment="CENTER_LEFT">
-            <Label text="📝 Tambah Tugas Baru" styleClass="form-title" />
-            <Label text="Isi detail tugas yang akan ditambahkan ke dalam sistem" styleClass="label-muted" />
-            <Separator />
-        </VBox>
+    <TextField fx:id="txtJudul" promptText="Judul Tugas*" />
+    <TextField fx:id="txtMataKuliah" promptText="Mata Kuliah*" />
+    <TextArea fx:id="txtDeskripsi" promptText="Deskripsi (opsional)" prefRowCount="3" />
 
-        <!-- Form Fields -->
-        <VBox spacing="20">
-            <!-- Judul Tugas -->
-            <VBox spacing="8">
-                <Label text="Judul Tugas" styleClass="field-label">
-                    <graphic>
-                        <Label text="*" styleClass="required-indicator" />
-                    </graphic>
-                </Label>
-                <TextField fx:id="txtJudul" 
-                          promptText="Masukkan judul tugas yang akan dikerjakan" 
-                          styleClass="text-field" 
-                          prefHeight="48" />
-            </VBox>
+    <!-- Deadline -->
+    <Label text="Deadline*" />
+    <DatePicker fx:id="datePicker" />
+    <HBox spacing="10.0">
+        <ComboBox fx:id="cbJam" promptText="Jam (0-23)" prefWidth="100.0" />
+        <ComboBox fx:id="cbMenit" promptText="Menit (0-59)" prefWidth="100.0" />
+    </HBox>
 
-            <!-- Deskripsi -->
-            <VBox spacing="8">
-                <Label text="Deskripsi Tugas" styleClass="field-label" />
-                <TextArea fx:id="txtDeskripsi" 
-                         promptText="Masukkan deskripsi detail tugas (opsional)&#10;Contoh: Buat aplikasi CRUD dengan JavaFX dan MySQL" 
-                         prefRowCount="4" 
-                         wrapText="true"
-                         styleClass="text-area" />
-            </VBox>
+    <!-- Prioritas, Tipe, dan Status -->
+    <ComboBox fx:id="cbPrioritas" promptText="Prioritas*" />
+    <ComboBox fx:id="cbTipe" promptText="Tipe Tugas*" />
+    <ComboBox fx:id="cbStatus" promptText="Status Tugas*" />
 
-            <!-- Row 1: Deadline dan Prioritas -->
-            <HBox spacing="20">
-                <VBox spacing="8" HBox.hgrow="ALWAYS">
-                    <Label text="Tanggal Deadline" styleClass="field-label">
-                        <graphic>
-                            <Label text="*" styleClass="required-indicator" />
-                        </graphic>
-                    </Label>
-                    <DatePicker fx:id="datePicker" 
-                               promptText="Pilih tanggal deadline" 
-                               styleClass="date-picker" 
-                               maxWidth="Infinity"
-                               prefHeight="48" />
-                </VBox>
-                
-                <VBox spacing="8" HBox.hgrow="ALWAYS">
-                    <Label text="Tingkat Prioritas" styleClass="field-label">
-                        <graphic>
-                            <Label text="*" styleClass="required-indicator" />
-                        </graphic>
-                    </Label>
-                    <ComboBox fx:id="cbPrioritas" 
-                             promptText="Pilih tingkat prioritas" 
-                             styleClass="combo-box" 
-                             maxWidth="Infinity"
-                             prefHeight="48" />
-                </VBox>
-            </HBox>
-
-            <!-- Row 2: Mata Kuliah dan Tipe -->
-            <HBox spacing="20">
-                <VBox spacing="8" HBox.hgrow="ALWAYS">
-                    <Label text="Mata Kuliah" styleClass="field-label">
-                        <graphic>
-                            <Label text="*" styleClass="required-indicator" />
-                        </graphic>
-                    </Label>
-                    <TextField fx:id="txtMataKuliah" 
-                              promptText="Contoh: Pemrograman Berorientasi Objek" 
-                              styleClass="text-field"
-                              prefHeight="48" />
-                </VBox>
-                
-                <VBox spacing="8" HBox.hgrow="ALWAYS">
-                    <Label text="Tipe Tugas" styleClass="field-label">
-                        <graphic>
-                            <Label text="*" styleClass="required-indicator" />
-                        </graphic>
-                    </Label>
-                    <ComboBox fx:id="cbTipe" 
-                             promptText="Pilih tipe tugas" 
-                             styleClass="combo-box" 
-                             maxWidth="Infinity"
-                             prefHeight="48" />
-                </VBox>
-            </HBox>
-
-            <!-- Anggota Kelompok Section -->
-            <VBox fx:id="vboxAnggotaKelompok" spacing="12" visible="false" managed="false">
-                <Separator />
-                <VBox spacing="8">
-                    <Label text="👥 Anggota Kelompok" styleClass="section-title" />
-                    <Label text="Tambahkan anggota untuk tugas kelompok" styleClass="label-muted" />
-                </VBox>
-                
-                <!-- Input Anggota Baru -->
-                <HBox spacing="12" alignment="CENTER_LEFT">
-                    <VBox spacing="6" HBox.hgrow="ALWAYS">
-                        <Label text="Nama Anggota" styleClass="field-label" />
-                        <TextField fx:id="txtNamaAnggota" 
-                                  promptText="Masukkan nama anggota kelompok" 
-                                  styleClass="text-field"
-                                  prefHeight="44" />
-                    </VBox>
-                    <VBox spacing="6">
-                        <Label text="NIM" styleClass="field-label" />
-                        <TextField fx:id="txtNimAnggota" 
-                                  promptText="NIM" 
-                                  styleClass="text-field"
-                                  prefWidth="120"
-                                  prefHeight="44" />
-                    </VBox>
-                    <VBox spacing="6" alignment="BOTTOM_LEFT">
-                        <Label text=" " styleClass="field-label" />
-                        <Button fx:id="btnTambahAnggota" 
-                               text="➕ Tambah" 
-                               styleClass="secondary-btn"
-                               prefHeight="44" />
-                    </VBox>
-                </HBox>
-
-                <!-- Daftar Anggota -->
-                <VBox spacing="8">
-                    <Label text="Daftar Anggota:" styleClass="field-label" />
-                    <ListView fx:id="listViewAnggota" 
-                             prefHeight="120" 
-                             styleClass="list-view" />
-                </VBox>
-            </VBox>
-        </VBox>
-
-        <!-- Spacer -->
-        <Region VBox.vgrow="ALWAYS" minHeight="20" />
-
-        <!-- Action Buttons -->
-        <HBox spacing="16" alignment="CENTER_RIGHT">
-            <Button fx:id="btnBatal" 
-                   text="❌ Batal" 
-                   styleClass="cancel-btn" 
-                   prefWidth="120"
-                   prefHeight="48" />
-            <Button fx:id="btnSimpan" 
-                   text="💾 Simpan Tugas" 
-                   styleClass="primary-btn" 
-                   prefWidth="140"
-                   prefHeight="48" />
+    <!-- Anggota kelompok -->
+    <VBox fx:id="vboxAnggotaKelompok" spacing="8.0" visible="false" managed="false">
+        <HBox spacing="10.0">
+            <TextField fx:id="txtNamaAnggota" promptText="Nama" />
+            <TextField fx:id="txtNimAnggota" promptText="NIM" />
+            <Button fx:id="btnTambahAnggota" text="Tambah" />
         </HBox>
-
-        <!-- Info Footer -->
-        <VBox spacing="8" alignment="CENTER">
-            <Separator />
-            <Label text="💡 Tips: Pastikan semua field yang bertanda (*) sudah terisi dengan benar" 
-                   styleClass="label-muted" 
-                   style="-fx-font-size: 12px;" />
-        </VBox>
+        <ListView fx:id="listViewAnggota" prefHeight="100.0" />
     </VBox>
-</ScrollPane>
+
+    <!-- Tombol -->
+    <HBox spacing="10.0">
+        <Button fx:id="btnSimpan" text="Simpan" />
+        <Button fx:id="btnBatal" text="Batal" />
+    </HBox>
+</VBox>

@@ -3,6 +3,7 @@ module com.coursemanagementsystem {
     requires javafx.fxml;
     requires transitive java.sql;
     requires transitive javafx.graphics;
+    requires java.prefs;
 
     opens com.coursemanagementsystem to javafx.fxml;
     exports com.coursemanagementsystem;
